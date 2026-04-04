@@ -98,7 +98,7 @@ function AgentListItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full px-3 py-2.5 text-left transition-colors ${
+      className={`w-full border px-3 py-3 text-left transition-colors ${
         isActive
           ? "border border-neutral-300 bg-white"
           : "hover:bg-neutral-100 border border-transparent"
@@ -115,7 +115,7 @@ function AgentListItem({
           {agent.name.charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-neutral-900">
+          <p className="truncate text-[13px] font-medium text-neutral-900">
             {agent.name}
           </p>
           <p className="truncate text-xs text-zinc-400">{agent.voiceName}</p>
@@ -251,9 +251,10 @@ function AgentEditorForm({
     <div className="flex flex-col gap-5">
       {/* Name */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
-          Agent Name
+        <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
+          1. Identity
         </label>
+        <p className="text-sm font-medium text-neutral-900">Agent name</p>
         <input
           type="text"
           value={draft.name}
@@ -264,10 +265,11 @@ function AgentEditorForm({
       </div>
 
       {/* System prompt */}
-      <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
-          System Prompt
+      <div className="space-y-1.5 border-t border-neutral-200 pt-5">
+        <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
+          2. Instructions
         </label>
+        <p className="text-sm font-medium text-neutral-900">System prompt</p>
         <textarea
           value={draft.systemPrompt}
           onChange={(e) => setDraft((d) => ({ ...d, systemPrompt: e.target.value }))}
@@ -276,24 +278,30 @@ function AgentEditorForm({
           className="helion-input resize-y font-mono"
         />
         <p className="text-xs text-zinc-400">
-          Write in plain English. Tip: keep responses short since this is spoken audio.
+          Keep responses concise and spoken-friendly for live calls.
         </p>
       </div>
 
       {/* Voice picker */}
-      <VoicePicker
-        value={draft.voiceId}
-        valueName={draft.voiceName}
-        onChange={(voiceId, voiceName) =>
-          setDraft((d) => ({ ...d, voiceId, voiceName }))
-        }
-      />
+      <div className="border-t border-neutral-200 pt-5">
+        <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
+          3. Voice
+        </label>
+        <VoicePicker
+          value={draft.voiceId}
+          valueName={draft.voiceName}
+          onChange={(voiceId, voiceName) =>
+            setDraft((d) => ({ ...d, voiceId, voiceName }))
+          }
+        />
+      </div>
 
       {/* TTS model */}
-      <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
-          TTS Model
+      <div className="space-y-1.5 border-t border-neutral-200 pt-5">
+        <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
+          4. Speech model
         </label>
+        <p className="text-sm font-medium text-neutral-900">TTS model</p>
         <select
           value={draft.ttsModel}
           onChange={(e) => setDraft((d) => ({ ...d, ttsModel: e.target.value }))}
@@ -308,13 +316,13 @@ function AgentEditorForm({
       </div>
 
       {/* Action row */}
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex items-center gap-2 border-t border-neutral-200 pt-5">
         <button
           onClick={handleSave}
           disabled={!isDirty}
           className="helion-btn-dark"
         >
-          {saved ? "✓ Saved" : "Save changes"}
+          {saved ? "Saved" : "Save changes"}
         </button>
         <button
           onClick={onDuplicate}
@@ -435,12 +443,12 @@ export function AgentManager() {
   // ── Main layout ───────────────────────────────────────────────────────────
 
   return (
-    <div className="grid min-h-[600px] grid-cols-1 gap-0 overflow-hidden border border-neutral-300 bg-white md:grid-cols-[240px_1fr]">
+    <div className="grid min-h-[640px] grid-cols-1 gap-0 overflow-hidden border border-neutral-300 bg-white md:grid-cols-[260px_1fr]">
       {/* ── Sidebar ── */}
-      <div className="flex flex-col border-b border-neutral-300 bg-neutral-50/60 md:border-b-0 md:border-r">
+      <div className="flex flex-col border-b border-neutral-300 bg-neutral-50/70 md:border-b-0 md:border-r">
         <div className="flex items-center justify-between border-b border-neutral-300 px-4 py-3">
-          <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Agents
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
+            Agent profiles
           </span>
           <button
             onClick={handleCreate}
@@ -450,7 +458,7 @@ export function AgentManager() {
             +
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 space-y-1 overflow-y-auto p-2">
           {agents.map((a) => (
             <AgentListItem
               key={a.id}
@@ -469,12 +477,15 @@ export function AgentManager() {
       {activeAgent ? (
         <div className="flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-3">
-            <h2 className="font-semibold text-neutral-900">
-              {activeAgent.name}
-            </h2>
+          <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-4">
+            <div>
+              <p className="helion-kicker">Configuration</p>
+              <h2 className="mt-1 text-lg font-semibold text-neutral-900">
+                {activeAgent.name}
+              </h2>
+            </div>
             {/* Tabs */}
-            <div className="flex overflow-hidden border border-neutral-300 text-sm">
+            <div className="flex overflow-hidden border border-neutral-300 text-[12px]">
               {(["configure", "test"] as const).map((t) => (
                 <button
                   key={t}

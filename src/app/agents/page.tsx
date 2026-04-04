@@ -12,16 +12,16 @@ export default function AgentsPage() {
     <AppShell displayName="Manuel Fernando" initials="MF">
       <section className="border-b border-neutral-300 pb-8">
         <p className="helion-kicker">Create</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-          New voice configuration
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl">
+          Configure your AI voice agents
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
-          Choose your agent profile, behavior, voice, and output style, then run
-          live test turns. Everything autosaves locally in this browser.
+        <p className="mt-4 max-w-3xl text-base leading-relaxed text-neutral-600">
+          Set behavior, pick voice and model settings, then run live test turns
+          before connecting your telephony providers.
         </p>
       </section>
 
-      <section className="mt-6 border border-neutral-300 bg-white px-5 py-4 text-sm text-neutral-800">
+      <section className="mt-8 border border-neutral-300 bg-white px-5 py-4 text-sm text-neutral-800">
         <p className="font-medium">Runtime requirements</p>
         <p className="mt-1 leading-relaxed text-neutral-600">
           Set <code className="font-mono text-xs">GEMINI_API_KEY</code> and{" "}
@@ -34,19 +34,19 @@ export default function AgentsPage() {
       <section className="mt-6 border-y border-neutral-300">
         <article className="flex items-center gap-4 border-b border-neutral-200 py-4 text-sm text-neutral-700">
           <span className="font-mono text-[13px] text-neutral-400">01</span>
-          Set agent name, system prompt, and TTS model.
+          Create an agent profile and set conversation rules.
         </article>
         <article className="flex items-center gap-4 border-b border-neutral-200 py-4 text-sm text-neutral-700">
           <span className="font-mono text-[13px] text-neutral-400">02</span>
-          Pick an ElevenLabs voice and preview in one tap.
+          Pick an ElevenLabs voice and tune speech model settings.
         </article>
         <article className="flex items-center gap-4 py-4 text-sm text-neutral-700">
           <span className="font-mono text-[13px] text-neutral-400">03</span>
-          Run voice and text turns before connecting webhooks.
+          Run voice and text tests before webhook deployment.
         </article>
       </section>
 
-      <section className="mt-4">
+      <section className="mt-6">
         <AgentManager />
       </section>
     </AppShell>
