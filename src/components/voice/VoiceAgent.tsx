@@ -202,6 +202,21 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
         throw new Error((err as { error?: string }).error ?? "Chat failed");
       }
 
+      // The server returns JSON (text-only fallback) when TTS is unavailable.
+      // Check Content-Type before attempting to decode as audio.
+      const contentType = res.headers.get("Content-Type") ?? "";
+      if (contentType.startsWith("application/json")) {
+        const data = await res.json() as { reply?: string; transcript?: string };
+        setTurns((prev) => [
+          ...prev,
+          { role: "user", text: data.transcript ?? "(audio)" },
+          { role: "assistant", text: data.reply ?? "" },
+        ]);
+        setStatus("ready");
+        return;
+      }
+
+      // Audio response path
       const rawTranscript = res.headers.get("X-Transcript");
       const rawReply = res.headers.get("X-Reply-Text");
       const userText = rawTranscript ? decodeURIComponent(rawTranscript) : "(audio)";

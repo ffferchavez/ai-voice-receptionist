@@ -188,7 +188,7 @@ function VoicePicker({
             disabled={loading}
             className="flex-1 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
           >
-            {loading && <option>Loading voices…</option>}
+            {loading && <option value={value}>{valueName} (loading…)</option>}
             {voices.map((v) => (
               <option key={v.voiceId} value={v.voiceId}>
                 {v.name} ({v.category})
@@ -348,21 +348,22 @@ function AgentEditorForm({
 // ── Main AgentManager component ───────────────────────────────────────────
 
 export function AgentManager() {
-  const [agents, setAgents] = useState<AgentConfig[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  // Lazy initializer reads localStorage synchronously — agents is never []
+  // on the initial render, which prevents the persist effect from wiping data.
+  const [agents, setAgents] = useState<AgentConfig[]>(() => loadAgents());
+  const [activeId, setActiveId] = useState<string | null>(
+    () => loadAgents()[0]?.id ?? null
+  );
   const [tab, setTab] = useState<"configure" | "test">("configure");
 
-  // Load from localStorage once on mount
+  // Skip the very first effect run (data just came from localStorage).
+  // Every subsequent change triggers a save.
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    const stored = loadAgents();
-    if (stored.length > 0) {
-      setAgents(stored);
-      setActiveId(stored[0].id);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
-  }, []);
-
-  // Persist whenever agents list changes
-  useEffect(() => {
     saveAgents(agents);
   }, [agents]);
 
