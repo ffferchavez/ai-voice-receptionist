@@ -1,8 +1,8 @@
 /**
- * Conversation manager — drives the AI brain using Claude Opus 4.6.
+ * Conversation manager — drives the AI brain using Gemini 2.5 Flash.
  *
  * Each session has its own message history so multi-turn context is preserved
- * across calls.  Sessions are kept in memory; persist to DB (call_sessions /
+ * across calls. Sessions are kept in memory; persist to DB (call_sessions /
  * call_events) at webhook ingestion time for durability.
  *
  * Usage:
@@ -11,7 +11,7 @@
  *   const reply = await mgr.chat(session.id, "I'd like to book a table");
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
 export interface SessionConfig {
   /** Custom system prompt for this receptionist instance. */
@@ -24,7 +24,7 @@ export interface ConversationSession {
   id: string;
   config: SessionConfig;
   /** Full message history sent to the API on every turn. */
-  messages: Anthropic.MessageParam[];
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,12 +51,10 @@ Always be polite, patient, and helpful. If you cannot help with something, offer
 export class ConversationManager {
   private static instance: ConversationManager;
   private readonly sessions = new Map<string, ConversationSession>();
-  private readonly anthropic: Anthropic;
+  private readonly gemini: GoogleGenAI;
 
   private constructor() {
-    this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
+    this.gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
 
   static getInstance(): ConversationManager {
@@ -90,7 +88,7 @@ export class ConversationManager {
 
   /**
    * Send a user message and get the assistant's reply.
-   * Uses Claude Opus 4.6 with adaptive thinking for nuanced responses.
+   * Uses Gemini 2.5 Flash for low-latency receptionist responses.
    */
   async chat(sessionId: string, userText: string): Promise<ChatResult> {
     const session = this.sessions.get(sessionId);
@@ -104,32 +102,28 @@ export class ConversationManager {
     const systemPrompt =
       session.config.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
 
-    // Use streaming so long responses don't time out
-    const stream = this.anthropic.messages.stream({
-      model: "claude-opus-4-6",
-      max_tokens: 64000,
-      thinking: { type: "adaptive" },
-      system: systemPrompt,
-      messages: session.messages,
+    const response = await this.gemini.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: session.messages.map((message) => ({
+        role: message.role === "assistant" ? "model" : "user",
+        parts: [{ text: message.content }],
+      })),
+      config: {
+        systemInstruction: systemPrompt,
+        maxOutputTokens: 1024,
+      },
     });
-
-    const message = await stream.finalMessage();
-
-    // Extract the text reply (skip thinking blocks — those are internal)
-    const textBlock = message.content.find(
-      (b): b is Anthropic.TextBlock => b.type === "text"
-    );
-    const replyText = textBlock?.text ?? "";
+    const replyText = response.text ?? "";
 
     // Persist assistant turn to history
-    session.messages.push({ role: "assistant", content: message.content });
+    session.messages.push({ role: "assistant", content: replyText });
     session.updatedAt = new Date();
 
     return {
       text: replyText,
       sessionId,
-      inputTokens: message.usage.input_tokens,
-      outputTokens: message.usage.output_tokens,
+      inputTokens: response.usageMetadata?.promptTokenCount ?? 0,
+      outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0,
     };
   }
 
@@ -141,47 +135,10 @@ export class ConversationManager {
     sessionId: string,
     userText: string
   ): AsyncGenerator<string, ChatResult, unknown> {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
+    const result = await this.chat(sessionId, userText);
+    if (result.text) {
+      yield result.text;
     }
-
-    session.messages.push({ role: "user", content: userText });
-
-    const systemPrompt =
-      session.config.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
-
-    const stream = this.anthropic.messages.stream({
-      model: "claude-opus-4-6",
-      max_tokens: 64000,
-      thinking: { type: "adaptive" },
-      system: systemPrompt,
-      messages: session.messages,
-    });
-
-    let accumulated = "";
-
-    for await (const event of stream) {
-      if (
-        event.type === "content_block_delta" &&
-        event.delta.type === "text_delta"
-      ) {
-        accumulated += event.delta.text;
-        yield event.delta.text;
-      }
-    }
-
-    const final = await stream.finalMessage();
-
-    // Persist the full assistant message (includes thinking blocks) to history
-    session.messages.push({ role: "assistant", content: final.content });
-    session.updatedAt = new Date();
-
-    return {
-      text: accumulated,
-      sessionId,
-      inputTokens: final.usage.input_tokens,
-      outputTokens: final.usage.output_tokens,
-    };
+    return result;
   }
 }

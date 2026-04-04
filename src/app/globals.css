@@ -1,26 +1,168 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
-  --foreground: #18181b;
+  --ui-bg: #fafafa;
+  --ui-bg-muted: #f4f4f5;
+  --ui-ink: #0a0a0a;
+  --ui-ink-deep: #050505;
+  --ui-surface: #f4f4f5;
+  --ui-surface-hover: #e4e4e7;
+  --ui-line: #0a0a0a;
+  --ui-line-soft: rgba(10, 10, 10, 0.1);
+  --ui-text: #0a0a0a;
+  --ui-muted: #52525b;
+  --ui-muted-dim: #71717a;
+  --ui-yellow: #facc15;
+  --ui-yellow-bright: #ffea00;
+  --ui-yellow-muted: rgba(250, 204, 21, 0.22);
+  --ui-accent: #0d9488;
+  --ui-accent-hover: #0f766e;
+  --ui-accent-muted: rgba(13, 148, 136, 0.12);
+  --ui-on-accent: #ffffff;
+  --ui-warning: #9a3412;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-background: var(--ui-bg);
+  --color-foreground: var(--ui-text);
+  --color-ui-bg: var(--ui-bg);
+  --color-ui-text: var(--ui-text);
+  --color-ui-ink: var(--ui-ink);
+  --color-ui-ink-deep: var(--ui-ink-deep);
+  --color-ui-elevated: #ffffff;
+  --color-ui-surface: var(--ui-surface);
+  --color-ui-surface-hover: var(--ui-surface-hover);
+  --color-ui-yellow: var(--ui-yellow);
+  --color-ui-yellow-bright: var(--ui-yellow-bright);
+  --color-ui-accent: var(--ui-accent);
+  --color-ui-accent-hover: var(--ui-accent-hover);
+  --color-ui-accent-muted: var(--ui-accent-muted);
+  --color-ui-on-accent: var(--ui-on-accent);
+  --color-ui-muted: var(--ui-muted);
+  --color-ui-muted-dim: var(--ui-muted-dim);
+  --color-ui-warning: var(--ui-warning);
+  --font-sans: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background-color: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.public-header-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+::selection {
+  background: var(--ui-yellow-muted);
+  color: var(--ui-ink-deep);
+}
+
+.helion-kicker {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.helion-panel {
+  border: 1px solid rgba(10, 10, 10, 0.2);
+  background: #fff;
+}
+
+.helion-input {
+  width: 100%;
+  border: 1px solid rgba(10, 10, 10, 0.34);
+  background: #fff;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 160ms ease;
+}
+
+.helion-input:focus {
+  border-color: #0a0a0a;
+}
+
+.helion-btn-dark {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background: #0a0a0a;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.helion-btn-dark:hover {
+  background: #262626;
+}
+
+.helion-btn-dark:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.helion-btn-soft {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  border: 1px solid rgba(10, 10, 10, 0.2);
+  background: #fff;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3f3f46;
+  transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.helion-btn-soft:hover {
+  background: #f4f4f5;
+  color: #0a0a0a;
+}
+
+.helion-row-link {
+  display: inline-flex;
+  min-height: 56px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 17px;
+  color: #18181b;
+  transition: background-color 160ms ease;
+}
+
+.helion-row-link:hover {
+  background: #f4f4f5;
 }

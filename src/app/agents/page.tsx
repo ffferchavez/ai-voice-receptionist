@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/marketing/site-header";
-import { SiteFooter } from "@/components/marketing/site-footer";
+import { AppShell } from "@/components/app/app-shell";
 import { AgentManager } from "@/components/voice/AgentManager";
 
 export const metadata: Metadata = {
@@ -10,49 +9,46 @@ export const metadata: Metadata = {
 
 export default function AgentsPage() {
   return (
-    <>
-      <SiteHeader />
-      <main className="flex-1">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
-          {/* Page header */}
-          <div className="mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-400 mb-2">
-              Helion Voices
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Voice Agents
-            </h1>
-            <p className="mt-2 text-zinc-500 dark:text-zinc-400 max-w-xl">
-              Configure your AI voice receptionists. Set the system prompt,
-              choose an ElevenLabs voice, then test them right here in the browser.
-            </p>
-          </div>
+    <AppShell displayName="Manuel Fernando" initials="MF">
+      <section className="border-b border-neutral-300 pb-8">
+        <p className="helion-kicker">Create</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
+          New voice configuration
+        </h1>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
+          Choose your agent profile, behavior, voice, and output style, then run
+          live test turns. Everything autosaves locally in this browser.
+        </p>
+      </section>
 
-          {/* Getting-started callout — only shown as a hint until they have keys set */}
-          <div className="mb-6 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-5 py-4 text-sm text-amber-800 dark:text-amber-300">
-            <p className="font-medium mb-1">Before you start</p>
-            <p className="text-amber-700 dark:text-amber-400">
-              Make sure{" "}
-              <code className="rounded bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 font-mono text-xs">
-                ANTHROPIC_API_KEY
-              </code>{" "}
-              and{" "}
-              <code className="rounded bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 font-mono text-xs">
-                ELEVENLABS_API_KEY
-              </code>{" "}
-              are set in your{" "}
-              <code className="rounded bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 font-mono text-xs">
-                .env.local
-              </code>{" "}
-              file, then restart the dev server.
-            </p>
-          </div>
+      <section className="mt-6 border border-neutral-300 bg-white px-5 py-4 text-sm text-neutral-800">
+        <p className="font-medium">Runtime requirements</p>
+        <p className="mt-1 leading-relaxed text-neutral-600">
+          Set <code className="font-mono text-xs">GEMINI_API_KEY</code> and{" "}
+          <code className="font-mono text-xs">ELEVENLABS_API_KEY</code> in{" "}
+          <code className="font-mono text-xs">.env.local</code>, then restart the
+          dev server.
+        </p>
+      </section>
 
-          {/* Main manager UI */}
-          <AgentManager />
-        </div>
-      </main>
-      <SiteFooter />
-    </>
+      <section className="mt-6 border-y border-neutral-300">
+        <article className="flex items-center gap-4 border-b border-neutral-200 py-4 text-sm text-neutral-700">
+          <span className="font-mono text-[13px] text-neutral-400">01</span>
+          Set agent name, system prompt, and TTS model.
+        </article>
+        <article className="flex items-center gap-4 border-b border-neutral-200 py-4 text-sm text-neutral-700">
+          <span className="font-mono text-[13px] text-neutral-400">02</span>
+          Pick an ElevenLabs voice and preview in one tap.
+        </article>
+        <article className="flex items-center gap-4 py-4 text-sm text-neutral-700">
+          <span className="font-mono text-[13px] text-neutral-400">03</span>
+          Run voice and text turns before connecting webhooks.
+        </article>
+      </section>
+
+      <section className="mt-4">
+        <AgentManager />
+      </section>
+    </AppShell>
   );
 }

@@ -1,7 +1,7 @@
 /**
  * POST /api/voice/chat
  *
- * Full voice agent turn: text-in → Claude Opus 4.6 → ElevenLabs TTS → audio-out.
+ * Full voice agent turn: text-in → Gemini 2.5 Flash → ElevenLabs TTS → audio-out.
  *
  * Accepts two modes:
  *
@@ -17,7 +17,7 @@
  * Mode C — multipart (audio in, audio out):
  *   Content-Type: multipart/form-data
  *   Fields: sessionId, audio (Blob), audioResponse? ("true"), voiceId?
- *   → STT → Claude → TTS → audio/mpeg stream
+ *   → STT → Gemini → TTS → audio/mpeg stream
  *
  * In all modes the session must exist (create via POST /api/voice/session first).
  */
@@ -28,11 +28,11 @@ import { ElevenLabsProvider } from "@/lib/voice/providers/elevenlabs";
 
 export async function POST(request: Request) {
   const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
 
-  if (!anthropicKey) {
+  if (!geminiKey) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured" },
+      { error: "GEMINI_API_KEY is not configured" },
       { status: 500 }
     );
   }
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
-  // ── Claude turn ───────────────────────────────────────────────────────────
+  // ── Gemini turn ───────────────────────────────────────────────────────────
   let replyText: string;
   try {
     const result = await mgr.chat(sessionId, userText.trim());

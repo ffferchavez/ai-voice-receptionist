@@ -272,7 +272,7 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {/* Transcript window */}
-      <div className="flex-1 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 min-h-48 max-h-80">
+      <div className="min-h-48 max-h-80 flex-1 overflow-y-auto border border-zinc-300 bg-white p-4">
         {turns.length === 0 ? (
           <p className="text-sm text-zinc-400 text-center mt-10">
             {status === "initializing"
@@ -286,10 +286,10 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
               className={`mb-3 flex ${t.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[82%] rounded-2xl px-4 py-2 text-sm leading-relaxed ${
+                className={`max-w-[82%] px-4 py-2 text-sm leading-relaxed ${
                   t.role === "user"
-                    ? "bg-violet-600 text-white rounded-br-sm"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
+                    ? "bg-neutral-900 text-white"
+                    : "bg-zinc-100 text-zinc-900"
                 }`}
               >
                 {t.text}
@@ -302,7 +302,7 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
 
       {/* Error banner */}
       {errorMsg && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 px-4 py-2 text-sm text-red-700 dark:text-red-300">
+        <div className="flex items-center gap-2 border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
           <span className="flex-1">{errorMsg}</span>
           <button onClick={resetError} className="font-medium hover:underline shrink-0">
             Dismiss
@@ -313,13 +313,13 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
       {/* Status + reset row */}
       <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
         <span className="flex items-center gap-1.5">
-          <span className={`inline-block h-2 w-2 rounded-full ${statusDotColor}`} />
+          <span className={`inline-block h-2 w-2 ${statusDotColor}`} />
           {statusLabel}
         </span>
         <button
           onClick={initSession}
           disabled={status === "initializing" || status === "recording"}
-          className="hover:text-zinc-700 dark:hover:text-zinc-200 disabled:opacity-40 transition-colors"
+          className="transition-colors hover:text-zinc-700 disabled:opacity-40"
           title="Start a fresh conversation"
         >
           ↺ Reset session
@@ -335,10 +335,10 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
           onPointerLeave={stopRecording}
           disabled={status !== "ready" && status !== "recording"}
           aria-label="Hold to speak"
-          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+          className={`relative flex h-12 w-12 shrink-0 items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 ${
             status === "recording"
               ? "bg-red-500 scale-110 shadow-lg"
-              : "bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              : "bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed"
           }`}
         >
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-white">
@@ -355,12 +355,12 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
           onKeyDown={(e) => e.key === "Enter" && sendText()}
           placeholder="Or type a message…"
           disabled={status !== "ready"}
-          className="flex-1 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-40"
+          className="helion-input flex-1 disabled:opacity-40"
         />
         <button
           onClick={sendText}
           disabled={status !== "ready" || !textInput.trim()}
-          className="rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-2 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="helion-btn-dark"
         >
           Send
         </button>

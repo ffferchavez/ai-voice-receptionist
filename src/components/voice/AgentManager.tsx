@@ -98,24 +98,24 @@ function AgentListItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-xl px-3 py-2.5 text-left transition-colors ${
+      className={`w-full px-3 py-2.5 text-left transition-colors ${
         isActive
-          ? "bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800"
-          : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent"
+          ? "border border-neutral-300 bg-white"
+          : "hover:bg-neutral-100 border border-transparent"
       }`}
     >
       <div className="flex items-center gap-2">
         <span
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+          className={`flex h-7 w-7 shrink-0 items-center justify-center text-xs font-semibold ${
             isActive
-              ? "bg-violet-600 text-white"
-              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+              ? "bg-neutral-900 text-white"
+              : "bg-neutral-200 text-neutral-600"
           }`}
         >
           {agent.name.charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          <p className="truncate text-sm font-medium text-neutral-900">
             {agent.name}
           </p>
           <p className="truncate text-xs text-zinc-400">{agent.voiceName}</p>
@@ -137,13 +137,12 @@ function VoicePicker({
   onChange: (voiceId: string, voiceName: string) => void;
 }) {
   const [voices, setVoices] = useState<ElevenLabsVoice[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewPlaying, setPreviewPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    setLoading(true);
     fetch("/api/voice/voices")
       .then((r) => r.json())
       .then((data) => {
@@ -172,7 +171,7 @@ function VoicePicker({
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+      <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
         Voice
       </label>
       {error ? (
@@ -186,7 +185,7 @@ function VoicePicker({
               if (v) onChange(v.voiceId, v.name);
             }}
             disabled={loading}
-            className="flex-1 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
+            className="helion-input flex-1 disabled:opacity-50"
           >
             {loading && <option value={value}>{valueName} (loading…)</option>}
             {voices.map((v) => (
@@ -200,12 +199,12 @@ function VoicePicker({
             onClick={playPreview}
             disabled={!selected?.previewUrl || previewPlaying}
             title="Preview voice"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+            className="helion-btn-soft h-9 w-9 p-0 disabled:opacity-40"
           >
             {previewPlaying ? (
-              <span className="h-3 w-3 rounded-sm bg-zinc-900 dark:bg-zinc-100" />
+              <span className="h-3 w-3 bg-neutral-900" />
             ) : (
-              <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-zinc-600 dark:text-zinc-300">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-neutral-600">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -213,7 +212,7 @@ function VoicePicker({
         </div>
       )}
       {!loading && voices.length === 0 && !error && (
-        <p className="text-xs text-zinc-400">No voices found.</p>
+        <p className="text-xs text-neutral-400">No voices found.</p>
       )}
     </div>
   );
@@ -235,12 +234,6 @@ function AgentEditorForm({
   const [draft, setDraft] = useState<AgentConfig>(agent);
   const [saved, setSaved] = useState(false);
 
-  // Reset draft when a different agent is selected
-  useEffect(() => {
-    setDraft(agent);
-    setSaved(false);
-  }, [agent.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleSave = () => {
     const updated = { ...draft, updatedAt: new Date().toISOString() };
     onSave(updated);
@@ -258,7 +251,7 @@ function AgentEditorForm({
     <div className="flex flex-col gap-5">
       {/* Name */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
           Agent Name
         </label>
         <input
@@ -266,13 +259,13 @@ function AgentEditorForm({
           value={draft.name}
           onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
           placeholder="e.g. Sales Receptionist"
-          className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+          className="helion-input"
         />
       </div>
 
       {/* System prompt */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
           System Prompt
         </label>
         <textarea
@@ -280,7 +273,7 @@ function AgentEditorForm({
           onChange={(e) => setDraft((d) => ({ ...d, systemPrompt: e.target.value }))}
           rows={8}
           placeholder="Describe the agent's role, tone, and behavior…"
-          className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 resize-y font-mono"
+          className="helion-input resize-y font-mono"
         />
         <p className="text-xs text-zinc-400">
           Write in plain English. Tip: keep responses short since this is spoken audio.
@@ -298,13 +291,13 @@ function AgentEditorForm({
 
       {/* TTS model */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
           TTS Model
         </label>
         <select
           value={draft.ttsModel}
           onChange={(e) => setDraft((d) => ({ ...d, ttsModel: e.target.value }))}
-          className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+          className="helion-input"
         >
           {TTS_MODELS.map((m) => (
             <option key={m.id} value={m.id}>
@@ -319,13 +312,13 @@ function AgentEditorForm({
         <button
           onClick={handleSave}
           disabled={!isDirty}
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="helion-btn-dark"
         >
           {saved ? "✓ Saved" : "Save changes"}
         </button>
         <button
           onClick={onDuplicate}
-          className="rounded-lg border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+          className="helion-btn-soft"
         >
           Duplicate
         </button>
@@ -336,7 +329,7 @@ function AgentEditorForm({
               onDelete();
             }
           }}
-          className="rounded-lg border border-red-200 dark:border-red-900 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+          className="helion-btn-soft border-red-200 text-red-700 hover:bg-red-50"
         >
           Delete
         </button>
@@ -419,19 +412,19 @@ export function AgentManager() {
 
   if (agents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 dark:bg-violet-950">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-violet-600">
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <div className="flex h-16 w-16 items-center justify-center bg-neutral-100">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-neutral-700">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
           </svg>
         </div>
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">No agents yet</h2>
+          <h2 className="text-lg font-semibold text-neutral-900">No agents yet</h2>
           <p className="mt-1 text-sm text-zinc-500">Create your first AI voice agent to get started.</p>
         </div>
         <button
           onClick={handleCreate}
-          className="rounded-full bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-500 transition-colors"
+          className="helion-btn-dark"
         >
           + Create agent
         </button>
@@ -442,17 +435,17 @@ export function AgentManager() {
   // ── Main layout ───────────────────────────────────────────────────────────
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-0 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 overflow-hidden bg-white dark:bg-zinc-900 shadow-sm min-h-[600px]">
+    <div className="grid min-h-[600px] grid-cols-1 gap-0 overflow-hidden border border-neutral-300 bg-white md:grid-cols-[240px_1fr]">
       {/* ── Sidebar ── */}
-      <div className="border-b md:border-b-0 md:border-r border-zinc-200/80 dark:border-zinc-800/80 flex flex-col bg-zinc-50/60 dark:bg-zinc-950/40">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-col border-b border-neutral-300 bg-neutral-50/60 md:border-b-0 md:border-r">
+        <div className="flex items-center justify-between border-b border-neutral-300 px-4 py-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
             Agents
           </span>
           <button
             onClick={handleCreate}
             title="Create new agent"
-            className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors text-lg leading-none"
+            className="helion-btn-soft h-7 w-7 p-0 text-lg leading-none"
           >
             +
           </button>
@@ -476,20 +469,20 @@ export function AgentManager() {
       {activeAgent ? (
         <div className="flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800/80 px-6 py-3">
-            <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+          <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-3">
+            <h2 className="font-semibold text-neutral-900">
               {activeAgent.name}
             </h2>
             {/* Tabs */}
-            <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden text-sm">
+            <div className="flex overflow-hidden border border-neutral-300 text-sm">
               {(["configure", "test"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
                   className={`px-4 py-1.5 font-medium transition-colors capitalize ${
                     tab === t
-                      ? "bg-violet-600 text-white"
-                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? "bg-neutral-900 text-white"
+                      : "text-neutral-600 hover:bg-neutral-100"
                   }`}
                 >
                   {t}
@@ -502,6 +495,7 @@ export function AgentManager() {
           <div className="flex-1 overflow-y-auto p-6">
             {tab === "configure" ? (
               <AgentEditorForm
+                key={activeAgent.id}
                 agent={activeAgent}
                 onSave={handleSave}
                 onDuplicate={handleDuplicate}
@@ -509,13 +503,13 @@ export function AgentManager() {
               />
             ) : (
               <div className="space-y-3">
-                <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400 space-y-0.5">
+                <div className="space-y-0.5 border border-neutral-300 bg-neutral-50 px-4 py-3 text-xs text-neutral-500">
                   <p>
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">Voice:</span>{" "}
+                    <span className="font-medium text-neutral-700">Voice:</span>{" "}
                     {activeAgent.voiceName}
                   </p>
                   <p>
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">Model:</span>{" "}
+                    <span className="font-medium text-neutral-700">Model:</span>{" "}
                     {activeAgent.ttsModel}
                   </p>
                   <p className="italic">
@@ -532,7 +526,7 @@ export function AgentManager() {
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-center text-sm text-zinc-400 p-6">
+        <div className="flex items-center justify-center p-6 text-sm text-neutral-400">
           Select an agent from the sidebar
         </div>
       )}
