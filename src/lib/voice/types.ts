@@ -3,7 +3,7 @@
  * Keep provider-specific payloads in lib/voice/providers/* and map here.
  */
 
-export type VoiceProviderId = "vapi" | "twilio" | "simulated" | "unknown";
+export type VoiceProviderId = "vapi" | "twilio" | "elevenlabs" | "simulated" | "unknown";
 
 export type NormalizedCallEventType =
   | "call.started"
