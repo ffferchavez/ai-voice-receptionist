@@ -11,7 +11,13 @@
  *  - Persists to localStorage (no backend needed until auth lands)
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { VoiceAgent } from "./VoiceAgent";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -51,22 +57,56 @@ const DEFAULT_SYSTEM_PROMPT = `You are a friendly and professional AI voice rece
 - Avoid bullet points or long lists; use natural spoken sentences`;
 
 const STORAGE_KEY = "helion-voice-agents";
+const STORAGE_EVENT = "helion-voice-agents:change";
+const EMPTY_AGENTS: AgentConfig[] = [];
+
+// useSyncExternalStore requires getSnapshot to return the same reference when the
+// underlying store is unchanged. JSON.parse / [] create new references every call,
+// which triggers "getSnapshot should be cached" and an infinite re-render loop.
+let agentsSnapshotCache: { raw: string | null; agents: AgentConfig[] } | null =
+  null;
 
 // ── Storage helpers ───────────────────────────────────────────────────────
 
 function loadAgents(): AgentConfig[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined") return EMPTY_AGENTS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AgentConfig[]) : [];
+    if (agentsSnapshotCache && agentsSnapshotCache.raw === raw) {
+      return agentsSnapshotCache.agents;
+    }
+    if (!raw) {
+      agentsSnapshotCache = { raw, agents: EMPTY_AGENTS };
+      return EMPTY_AGENTS;
+    }
+    const parsed = JSON.parse(raw) as AgentConfig[];
+    const agents = parsed.length === 0 ? EMPTY_AGENTS : parsed;
+    agentsSnapshotCache = { raw, agents };
+    return agents;
   } catch {
-    return [];
+    agentsSnapshotCache = { raw: null, agents: EMPTY_AGENTS };
+    return EMPTY_AGENTS;
   }
 }
 
 function saveAgents(agents: AgentConfig[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
+  window.dispatchEvent(new Event(STORAGE_EVENT));
+}
+
+function subscribeAgents(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key && event.key !== STORAGE_KEY) return;
+    onStoreChange();
+  };
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(STORAGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(STORAGE_EVENT, onStoreChange);
+  };
 }
 
 function createAgent(overrides: Partial<AgentConfig> = {}): AgentConfig {
@@ -144,12 +184,25 @@ function VoicePicker({
 
   useEffect(() => {
     fetch("/api/voice/voices")
-      .then((r) => r.json())
-      .then((data) => {
+      .then(async (r) => {
+        const data = (await r.json()) as {
+          voices?: ElevenLabsVoice[];
+          error?: string;
+        };
+        if (!r.ok) {
+          setVoices([]);
+          setError(
+            data.error ??
+              "Could not load voices — check ELEVENLABS_API_KEY and key permissions",
+          );
+          return;
+        }
         setVoices(data.voices ?? []);
         setError(null);
       })
-      .catch(() => setError("Could not load voices — check ELEVENLABS_API_KEY"))
+      .catch(() =>
+        setError("Could not load voices — check ELEVENLABS_API_KEY"),
+      )
       .finally(() => setLoading(false));
   }, []);
 
@@ -349,35 +402,24 @@ function AgentEditorForm({
 // ── Main AgentManager component ───────────────────────────────────────────
 
 export function AgentManager() {
-  // Lazy initializer reads localStorage synchronously — agents is never []
-  // on the initial render, which prevents the persist effect from wiping data.
-  const [agents, setAgents] = useState<AgentConfig[]>(() => loadAgents());
-  const [activeId, setActiveId] = useState<string | null>(
-    () => loadAgents()[0]?.id ?? null
+  const agents = useSyncExternalStore(
+    subscribeAgents,
+    loadAgents,
+    () => EMPTY_AGENTS
   );
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [tab, setTab] = useState<"configure" | "test">("configure");
-
-  // Skip the very first effect run (data just came from localStorage).
-  // Every subsequent change triggers a save.
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    saveAgents(agents);
-  }, [agents]);
-
-  const activeAgent = agents.find((a) => a.id === activeId) ?? null;
+  const resolvedActiveId = activeId ?? agents[0]?.id ?? null;
+  const activeAgent = agents.find((a) => a.id === resolvedActiveId) ?? null;
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleCreate = useCallback(() => {
     const a = createAgent();
-    setAgents((prev) => [...prev, a]);
+    saveAgents([...agents, a]);
     setActiveId(a.id);
     setTab("configure");
-  }, []);
+  }, [agents]);
 
   const handleDuplicate = useCallback(() => {
     if (!activeAgent) return;
@@ -388,33 +430,29 @@ export function AgentManager() {
       voiceName: activeAgent.voiceName,
       ttsModel: activeAgent.ttsModel,
     });
-    setAgents((prev) => {
-      const idx = prev.findIndex((a) => a.id === activeAgent.id);
-      const next = [...prev];
-      next.splice(idx + 1, 0, clone);
-      return next;
-    });
+    const idx = agents.findIndex((a) => a.id === activeAgent.id);
+    const next = [...agents];
+    next.splice(idx + 1, 0, clone);
+    saveAgents(next);
     setActiveId(clone.id);
     setTab("configure");
-  }, [activeAgent]);
+  }, [activeAgent, agents]);
 
   const handleSave = useCallback((updated: AgentConfig) => {
-    setAgents((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
-  }, []);
+    saveAgents(agents.map((a) => (a.id === updated.id ? updated : a)));
+  }, [agents]);
 
   const handleDelete = useCallback(() => {
     if (!activeAgent) return;
-    setAgents((prev) => {
-      const next = prev.filter((a) => a.id !== activeAgent.id);
-      if (next.length > 0) {
-        const idx = prev.findIndex((a) => a.id === activeAgent.id);
-        setActiveId(next[Math.min(idx, next.length - 1)].id);
-      } else {
-        setActiveId(null);
-      }
-      return next;
-    });
-  }, [activeAgent]);
+    const next = agents.filter((a) => a.id !== activeAgent.id);
+    saveAgents(next);
+    if (next.length > 0) {
+      const idx = agents.findIndex((a) => a.id === activeAgent.id);
+      setActiveId(next[Math.min(idx, next.length - 1)].id);
+      return;
+    }
+    setActiveId(null);
+  }, [activeAgent, agents]);
 
   // ── Empty state ───────────────────────────────────────────────────────────
 
@@ -463,7 +501,7 @@ export function AgentManager() {
             <AgentListItem
               key={a.id}
               agent={a}
-              isActive={a.id === activeId}
+              isActive={a.id === resolvedActiveId}
               onClick={() => {
                 setActiveId(a.id);
                 setTab("configure");

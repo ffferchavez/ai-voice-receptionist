@@ -13,6 +13,7 @@ import { ElevenLabsProvider } from "@/lib/voice/providers/elevenlabs";
 
 export async function GET() {
   const apiKey = process.env.ELEVENLABS_API_KEY;
+
   if (!apiKey) {
     return NextResponse.json(
       { error: "ELEVENLABS_API_KEY is not configured" },
@@ -34,9 +35,18 @@ export async function GET() {
     return NextResponse.json({ voices });
   } catch (err) {
     console.error("[Voices] ElevenLabs error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch voices" },
-      { status: 502 }
-    );
+
+    let apiStatus: number | undefined;
+    if (err && typeof err === "object" && "statusCode" in err) {
+      const sc = (err as { statusCode?: unknown }).statusCode;
+      if (typeof sc === "number") apiStatus = sc;
+    }
+
+    const hint =
+      apiStatus === 401
+        ? "ElevenLabs rejected the key (401). Use a valid API key with the voices_read permission enabled in the ElevenLabs dashboard."
+        : "Failed to fetch voices from ElevenLabs.";
+
+    return NextResponse.json({ error: hint }, { status: 502 });
   }
 }
