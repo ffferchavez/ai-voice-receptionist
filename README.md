@@ -37,6 +37,9 @@ See [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) for architecture, routes, pha
 
    Enable **Email** auth (or your chosen provider) under Authentication → Providers.
 
+   Under **Authentication → URL configuration**, add **Redirect URLs**:
+   `http://localhost:3000/auth/callback` (and your production origin + `/auth/callback` when you deploy). This is required for email confirmation links.
+
 4. **Run locally**
 
    ```bash
@@ -61,5 +64,5 @@ See [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) for architecture, routes, pha
 
 ## Phase status
 
-- **Phase 1** (current): Marketing landing, project skeleton, Supabase client wiring, SQL migration + RLS, placeholder auth pages, health check.
-- **Phase 2+**: Auth flows, dashboard, receptionist/knowledge UI, webhooks, OpenAI, call/lead views — see `docs/PROJECT_PLAN.md`.
+- **Done so far**: Marketing + app shell, Supabase client wiring + session refresh (`src/proxy.ts`), SQL migration + RLS, **email/password auth** (login, signup, callback route), **protected** `/dashboard` and `/agents`, **default org** bootstrap via `create_organization_with_owner`, health check, in-browser voice demo (Gemini + ElevenLabs), agents UI (localStorage).
+- **Toward production**: Persist agents + receptionist config per org, webhook ingestion, OpenAI lead extraction, calls/leads UI — see **`docs/PROJECT_PLAN.md` §7 and §12**.

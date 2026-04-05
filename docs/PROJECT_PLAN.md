@@ -155,3 +155,26 @@ Setup instructions live in `README.md` (local dev, Supabase link, migrations, de
 ## 10. Out of scope (v1 reminder)
 
 - Live agent transfer, calendar, outbound campaigns, multi-region HA, separate Python/Go API.
+
+---
+
+## 11. Reminders (non-blocking)
+
+- **Voice / LLM language**: If callers get replies in the “wrong” language, tighten the agent **system prompt** (e.g. “reply in the same language the caller uses”). Browser voice + ElevenLabs TTS may also benefit from **`eleven_multilingual_v2`** for mixed locales. Defaults were updated in code; agents saved in **localStorage** keep their old prompt until edited.
+
+---
+
+## 12. Production readiness — what’s left
+
+Roughly **Phases 2–7** in §7. Today the **DB migration + RLS** exist, but most product flows are not wired to Postgres yet.
+
+| Area | Current state | Typical next step |
+|------|----------------|-------------------|
+| **Auth** | Email/password via `createSupabaseBrowserClient`; `/auth/callback` for email links; proxy gates `/dashboard` + `/agents` | OAuth providers, password reset UI, optional server actions |
+| **Tenancy** | First visit to an authenticated route calls `ensureDefaultOrganization` (RPC `create_organization_with_owner`) | Org switcher, invite flows, thread `org_id` into product data |
+| **Voice agent config** | `AgentManager` persists to **localStorage** | CRUD against `receptionist_configs` (or related table) per org; optional encrypt secrets at rest |
+| **Live calls / transcripts** | In-browser Gemini + ElevenLabs demo; `ConversationManager` is **in-memory** | `POST /api/webhooks/voice/[provider]`, normalize payload, insert `call_sessions` / `call_events` with **service role** after verifying signature/secret |
+| **Leads / summaries** | Planned | Phase 5: OpenAI extraction → `captured_leads`; transcript summary on session |
+| **Ops** | `/api/health` | Production env on Vercel/etc., all secrets in host env, Supabase Auth URLs + redirect config, rate limits on webhooks |
+
+For setup already required before prod: apply **`supabase/migrations/...`**, set env vars from **`.env.example`**, enable Auth provider(s) in Supabase dashboard.

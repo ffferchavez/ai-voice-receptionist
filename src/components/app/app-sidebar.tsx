@@ -1,5 +1,6 @@
 "use client";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -167,12 +168,7 @@ function SidebarUserFooter({
           >
             {safe}
           </span>
-          <Link
-            href="/login"
-            className={`${navLinkFocus} inline-flex min-h-10 items-center px-1 text-[12px] font-medium text-neutral-500 transition-colors hover:text-neutral-950`}
-          >
-            Sign in
-          </Link>
+          <SignOutButton collapsed />
         </div>
       </div>
     );
@@ -193,18 +189,7 @@ function SidebarUserFooter({
                 {shortLabel}
               </p>
               <div className="mt-3 flex flex-col gap-0.5 border-t border-neutral-100 pt-3">
-                <Link
-                  href="/login"
-                  className={`${navLinkFocus} inline-flex min-h-10 items-center gap-2 px-1 text-[13px] font-medium text-neutral-600 transition-colors hover:text-neutral-950`}
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/signup"
-                  className={`${navLinkFocus} inline-flex min-h-10 items-center gap-2 px-1 text-[13px] font-medium tracking-wide text-neutral-500 transition-colors hover:text-neutral-950`}
-                >
-                  Create account
-                </Link>
+                <SignOutButton />
               </div>
             </div>
           </div>

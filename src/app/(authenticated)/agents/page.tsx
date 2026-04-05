@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/app/app-shell";
 import { AgentManager } from "@/components/voice/AgentManager";
 
 export const metadata: Metadata = {
@@ -9,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function AgentsPage() {
   return (
-    <AppShell displayName="Manuel Fernando" initials="MF">
+    <>
       <section className="border-b border-neutral-300 pb-8">
         <p className="helion-kicker">Create</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl">
@@ -49,6 +48,6 @@ export default function AgentsPage() {
       <section className="mt-6">
         <AgentManager />
       </section>
-    </AppShell>
+    </>
   );
 }

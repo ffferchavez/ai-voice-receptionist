@@ -1,8 +1,19 @@
-import Link from "next/link";
+import { Suspense } from "react";
+import { LoginForm } from "./login-form";
 
 export const metadata = {
   title: "Sign in · AI Voice Receptionist",
 };
+
+function LoginFallback() {
+  return (
+    <div className="mt-7 space-y-4 animate-pulse">
+      <div className="h-10 rounded bg-neutral-200" />
+      <div className="h-10 rounded bg-neutral-200" />
+      <div className="h-11 rounded bg-neutral-300" />
+    </div>
+  );
+}
 
 export default function LoginPage() {
   return (
@@ -16,50 +27,9 @@ export default function LoginPage() {
           Use the email and password you signed up with.
         </p>
 
-        <form className="mt-7 space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-medium text-neutral-900">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="you@company.com"
-              className="helion-input"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label
-              htmlFor="password"
-              className="text-xs font-medium text-neutral-900"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="helion-input"
-            />
-          </div>
-          <button
-            type="button"
-            className="helion-btn-dark mt-1 w-full"
-          >
-            Log in
-          </button>
-        </form>
-
-        <p className="mt-4 text-center text-sm text-neutral-500">
-          New here?{" "}
-          <Link href="/signup" className="underline underline-offset-2">
-            Sign up
-          </Link>
-        </p>
-        <p className="mt-8 text-center text-sm text-neutral-500">
-          <Link href="/" className="underline underline-offset-2">
-            Back to home
-          </Link>
-        </p>
+        <Suspense fallback={<LoginFallback />}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

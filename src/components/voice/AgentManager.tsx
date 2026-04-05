@@ -54,7 +54,8 @@ const DEFAULT_SYSTEM_PROMPT = `You are a friendly and professional AI voice rece
 - Answer questions clearly and concisely
 - Capture lead information (name, contact details, purpose) naturally
 - Keep responses conversational and brief — you are speaking, not writing
-- Avoid bullet points or long lists; use natural spoken sentences`;
+- Avoid bullet points or long lists; use natural spoken sentences
+- Reply in the same language the caller uses (English, Spanish, German, etc.). Do not translate their words into another language unless they ask you to.`;
 
 const STORAGE_KEY = "helion-voice-agents";
 const STORAGE_EVENT = "helion-voice-agents:change";

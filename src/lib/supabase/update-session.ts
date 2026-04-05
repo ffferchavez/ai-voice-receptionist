@@ -1,7 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Runs in `src/proxy.ts` (Node.js) to refresh Supabase auth cookies. */
+function copyCookies(from: NextResponse, to: NextResponse) {
+  for (const c of from.cookies.getAll()) {
+    to.cookies.set(c.name, c.value);
+  }
+}
+
+function isProtectedPath(pathname: string) {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/agents")
+  );
+}
+
+function isAuthPagePath(pathname: string) {
+  return pathname === "/login" || pathname === "/signup";
+}
+
+/** Runs in `src/proxy.ts` to refresh Supabase auth cookies and gate app routes. */
 export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -29,7 +46,28 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+
+  if (isProtectedPath(pathname) && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set("next", pathname);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    copyCookies(supabaseResponse, redirectResponse);
+    return redirectResponse;
+  }
+
+  if (isAuthPagePath(pathname) && user) {
+    const redirectResponse = NextResponse.redirect(
+      new URL("/dashboard", request.url),
+    );
+    copyCookies(supabaseResponse, redirectResponse);
+    return redirectResponse;
+  }
 
   return supabaseResponse;
 }

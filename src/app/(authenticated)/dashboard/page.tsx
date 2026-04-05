@@ -1,17 +1,38 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app/app-shell";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { displayNameFromUser } from "@/lib/user-display";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Dashboard",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const firstName = displayNameFromUser(
+    profile?.display_name,
+    user.email,
+  ).split(/\s+/)[0];
+
   return (
-    <AppShell displayName="Manuel Fernando" initials="MF">
+    <>
       <section className="border-b border-neutral-300 pb-10">
         <p className="helion-kicker">Workspace</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-5xl">
-          Hi, Manuel Fernando
+          Hi, {firstName}
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-neutral-600">
           Set up your receptionist, create conversation flows, and review saved
@@ -21,13 +42,19 @@ export default function DashboardPage() {
           <div className="border-r border-neutral-300 pr-6 sm:pr-12">
             <p className="helion-kicker">Agents</p>
             <p className="mt-2 text-4xl font-semibold tracking-tight text-neutral-950">
-              2
+              —
+            </p>
+            <p className="mt-1 text-xs text-neutral-500">
+              Saved in this browser until DB sync ships
             </p>
           </div>
           <div>
             <p className="helion-kicker">Saved transcripts</p>
             <p className="mt-2 text-4xl font-semibold tracking-tight text-neutral-950">
-              15
+              —
+            </p>
+            <p className="mt-1 text-xs text-neutral-500">
+              After webhooks land, counts show here
             </p>
           </div>
         </div>
@@ -89,6 +116,6 @@ export default function DashboardPage() {
           <li className="py-3">03 Save transcripts and capture qualified leads.</li>
         </ol>
       </section>
-    </AppShell>
+    </>
   );
 }
