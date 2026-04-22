@@ -1,11 +1,11 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * Ensures the current user belongs to at least one organization.
  * Uses the SECURITY DEFINER RPC from the initial migration.
  */
 export async function ensureDefaultOrganization(
-  supabase: SupabaseClient,
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> },
 ): Promise<string | null> {
   const { data: existing, error: selectError } = await supabase
