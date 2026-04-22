@@ -5,7 +5,7 @@ export function readTemplateVariables(input: unknown): VarMap {
   const entries = Object.entries(input as Record<string, unknown>).filter(
     ([key, value]) => typeof key === "string" && typeof value === "string",
   );
-  return Object.fromEntries(entries);
+  return Object.fromEntries(entries) as VarMap;
 }
 
 export function applyTemplateVariables(

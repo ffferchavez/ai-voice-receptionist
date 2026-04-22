@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getOrgContext } from "@/lib/server/require-org";
+import type { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   defaultAgentSettings,
   DEFAULT_SYSTEM_PROMPT,
@@ -17,10 +18,10 @@ type AgentRow = {
   updated_at: string;
 };
 
+type OrgSupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
 async function ensureMainBranchForAgent(args: {
-  supabase: Awaited<ReturnType<typeof getOrgContext>> extends { ok: true; supabase: infer T }
-    ? T
-    : never;
+  supabase: OrgSupabaseClient;
   agentId: string;
   organizationId: string;
   userId: string;
