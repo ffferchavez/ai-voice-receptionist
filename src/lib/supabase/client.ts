@@ -1,14 +1,17 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { getSharedAuthCookieOptions } from "@/lib/supabase/cookie-options";
+
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export function createSupabaseBrowserClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (browserClient) return browserClient;
+  const { supabaseUrl, supabaseKey } = getSupabasePublicEnv();
 
-  if (!url || !anonKey) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    );
-  }
+  browserClient = createBrowserClient(supabaseUrl, supabaseKey, {
+    db: { schema: "voices" },
+    cookieOptions: getSharedAuthCookieOptions(),
+  });
 
-  return createBrowserClient(url, anonKey);
+  return browserClient;
 }

@@ -1,29 +1,35 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { getSharedAuthCookieOptions } from "@/lib/supabase/cookie-options";
 
 const BUILD_PLACEHOLDER_URL = "http://127.0.0.1:54321";
 const BUILD_PLACEHOLDER_KEY = "supabase-build-placeholder";
 
 export async function createSupabaseServerClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let supabaseUrl: string | undefined;
+  let supabaseKey: string | undefined;
   const duringProdBuild =
     process.env.NEXT_PHASE === "phase-production-build";
 
-  if (!url || !anonKey) {
+  try {
+    const env = getSupabasePublicEnv();
+    supabaseUrl = env.supabaseUrl;
+    supabaseKey = env.supabaseKey;
+  } catch {
     if (!duringProdBuild) {
-      throw new Error(
-        "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
-      );
+      throw new Error("Missing Supabase public environment variables");
     }
   }
 
   const cookieStore = await cookies();
 
   return createServerClient(
-    url ?? BUILD_PLACEHOLDER_URL,
-    anonKey ?? BUILD_PLACEHOLDER_KEY,
+    supabaseUrl ?? BUILD_PLACEHOLDER_URL,
+    supabaseKey ?? BUILD_PLACEHOLDER_KEY,
     {
+    db: { schema: "voices" },
+    cookieOptions: getSharedAuthCookieOptions(),
     cookies: {
       getAll() {
         return cookieStore.getAll();

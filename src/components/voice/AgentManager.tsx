@@ -1,26 +1,11 @@
 "use client";
 
-/**
- * AgentManager — full agent management UI.
- *
- * Features:
- *  - Create, duplicate, delete voice agents
- *  - Edit name, system prompt, ElevenLabs voice, TTS model
- *  - Live voice picker with preview playback
- *  - In-page test widget (VoiceAgent) without leaving the screen
- *  - Persists to localStorage (no backend needed until auth lands)
- */
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { BranchesTab } from "@/components/voice/tabs/branches-tab";
+import { TestsTab } from "@/components/voice/tabs/tests-tab";
+import { ToolsTab } from "@/components/voice/tabs/tools-tab";
 import { VoiceAgent } from "./VoiceAgent";
-
-// ── Types ──────────────────────────────────────────────────────────────────
 
 export interface AgentConfig {
   id: string;
@@ -29,6 +14,7 @@ export interface AgentConfig {
   voiceId: string;
   voiceName: string;
   ttsModel: string;
+  settings: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -40,92 +26,55 @@ interface ElevenLabsVoice {
   previewUrl: string | null;
 }
 
-// ── Constants ──────────────────────────────────────────────────────────────
-
 const TTS_MODELS = [
-  { id: "eleven_turbo_v2_5", label: "Turbo v2.5 — fastest, low latency" },
-  { id: "eleven_flash_v2_5", label: "Flash v2.5 — ultra-fast" },
-  { id: "eleven_multilingual_v2", label: "Multilingual v2 — best quality" },
-  { id: "eleven_turbo_v2", label: "Turbo v2 — fast" },
+  { id: "eleven_turbo_v2_5", label: "Turbo v2.5 - fastest, low latency" },
+  { id: "eleven_flash_v2_5", label: "Flash v2.5 - ultra-fast" },
+  { id: "eleven_multilingual_v2", label: "Multilingual v2 - best quality" },
+  { id: "eleven_turbo_v2", label: "Turbo v2 - fast" },
 ];
 
 const DEFAULT_SYSTEM_PROMPT = `You are a friendly and professional AI voice receptionist. Your job is to:
 - Greet callers warmly and identify their needs
 - Answer questions clearly and concisely
 - Capture lead information (name, contact details, purpose) naturally
-- Keep responses conversational and brief — you are speaking, not writing
+- Keep responses conversational and brief - you are speaking, not writing
 - Avoid bullet points or long lists; use natural spoken sentences
 - Reply in the same language the caller uses (English, Spanish, German, etc.). Do not translate their words into another language unless they ask you to.`;
 
-const STORAGE_KEY = "helion-voice-agents";
-const STORAGE_EVENT = "helion-voice-agents:change";
-const EMPTY_AGENTS: AgentConfig[] = [];
+type TabId = "configure" | "live" | "branches" | "tests" | "tools";
 
-// useSyncExternalStore requires getSnapshot to return the same reference when the
-// underlying store is unchanged. JSON.parse / [] create new references every call,
-// which triggers "getSnapshot should be cached" and an infinite re-render loop.
-let agentsSnapshotCache: { raw: string | null; agents: AgentConfig[] } | null =
-  null;
-
-// ── Storage helpers ───────────────────────────────────────────────────────
-
-function loadAgents(): AgentConfig[] {
-  if (typeof window === "undefined") return EMPTY_AGENTS;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (agentsSnapshotCache && agentsSnapshotCache.raw === raw) {
-      return agentsSnapshotCache.agents;
-    }
-    if (!raw) {
-      agentsSnapshotCache = { raw, agents: EMPTY_AGENTS };
-      return EMPTY_AGENTS;
-    }
-    const parsed = JSON.parse(raw) as AgentConfig[];
-    const agents = parsed.length === 0 ? EMPTY_AGENTS : parsed;
-    agentsSnapshotCache = { raw, agents };
-    return agents;
-  } catch {
-    agentsSnapshotCache = { raw: null, agents: EMPTY_AGENTS };
-    return EMPTY_AGENTS;
-  }
-}
-
-function saveAgents(agents: AgentConfig[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
-  window.dispatchEvent(new Event(STORAGE_EVENT));
-}
-
-function subscribeAgents(onStoreChange: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key && event.key !== STORAGE_KEY) return;
-    onStoreChange();
+async function fetchAgents(): Promise<AgentConfig[]> {
+  const res = await fetch("/api/voices/agents");
+  const data = (await res.json()) as {
+    agents?: Array<{
+      id: string;
+      name: string;
+      system_prompt: string;
+      voice_id: string | null;
+      settings: Record<string, unknown> | null;
+      created_at: string;
+      updated_at: string;
+    }>;
   };
-  window.addEventListener("storage", handleStorage);
-  window.addEventListener(STORAGE_EVENT, onStoreChange);
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-    window.removeEventListener(STORAGE_EVENT, onStoreChange);
-  };
+  const rows = data.agents ?? [];
+  return rows.map((r) => {
+    const settings = (r.settings ?? {}) as {
+      ui?: { voiceName?: string };
+      ttsModel?: string;
+    };
+    return {
+      id: r.id,
+      name: r.name,
+      systemPrompt: r.system_prompt || DEFAULT_SYSTEM_PROMPT,
+      voiceId: r.voice_id ?? "21m00Tcm4TlvDq8ikWAM",
+      voiceName: settings.ui?.voiceName ?? "Rachel",
+      ttsModel: settings.ttsModel ?? "eleven_turbo_v2_5",
+      settings: (r.settings ?? {}) as Record<string, unknown>,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    };
+  });
 }
-
-function createAgent(overrides: Partial<AgentConfig> = {}): AgentConfig {
-  const now = new Date().toISOString();
-  return {
-    id: crypto.randomUUID(),
-    name: "New Agent",
-    systemPrompt: DEFAULT_SYSTEM_PROMPT,
-    voiceId: "21m00Tcm4TlvDq8ikWAM",
-    voiceName: "Rachel",
-    ttsModel: "eleven_turbo_v2_5",
-    createdAt: now,
-    updatedAt: now,
-    ...overrides,
-  };
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────
 
 function AgentListItem({
   agent,
@@ -142,31 +91,25 @@ function AgentListItem({
       className={`w-full border px-3 py-3 text-left transition-colors ${
         isActive
           ? "border border-neutral-300 bg-white"
-          : "hover:bg-neutral-100 border border-transparent"
+          : "border border-transparent hover:bg-neutral-100"
       }`}
     >
       <div className="flex items-center gap-2">
         <span
           className={`flex h-7 w-7 shrink-0 items-center justify-center text-xs font-semibold ${
-            isActive
-              ? "bg-neutral-900 text-white"
-              : "bg-neutral-200 text-neutral-600"
+            isActive ? "bg-neutral-900 text-white" : "bg-neutral-200 text-neutral-600"
           }`}
         >
           {agent.name.charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-[13px] font-medium text-neutral-900">
-            {agent.name}
-          </p>
+          <p className="truncate text-[13px] font-medium text-neutral-900">{agent.name}</p>
           <p className="truncate text-xs text-zinc-400">{agent.voiceName}</p>
         </div>
       </div>
     </button>
   );
 }
-
-// ── Voice picker ──────────────────────────────────────────────────────────
 
 function VoicePicker({
   value,
@@ -186,24 +129,19 @@ function VoicePicker({
   useEffect(() => {
     fetch("/api/voice/voices")
       .then(async (r) => {
-        const data = (await r.json()) as {
-          voices?: ElevenLabsVoice[];
-          error?: string;
-        };
+        const data = (await r.json()) as { voices?: ElevenLabsVoice[]; error?: string };
         if (!r.ok) {
           setVoices([]);
           setError(
             data.error ??
-              "Could not load voices — check ELEVENLABS_API_KEY and key permissions",
+              "Could not load voices - check ELEVENLABS_API_KEY and permissions",
           );
           return;
         }
         setVoices(data.voices ?? []);
         setError(null);
       })
-      .catch(() =>
-        setError("Could not load voices — check ELEVENLABS_API_KEY"),
-      )
+      .catch(() => setError("Could not load voices - check ELEVENLABS_API_KEY"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -212,9 +150,7 @@ function VoicePicker({
   const playPreview = () => {
     const previewUrl = selected?.previewUrl;
     if (!previewUrl) return;
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    if (audioRef.current) audioRef.current.pause();
     const audio = new Audio(previewUrl);
     audioRef.current = audio;
     setPreviewPlaying(true);
@@ -225,7 +161,7 @@ function VoicePicker({
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wide">
+      <label className="block text-xs font-medium uppercase tracking-wide text-neutral-500">
         Voice
       </label>
       {error ? (
@@ -241,7 +177,7 @@ function VoicePicker({
             disabled={loading}
             className="helion-input flex-1 disabled:opacity-50"
           >
-            {loading && <option value={value}>{valueName} (loading…)</option>}
+            {loading ? <option value={value}>{valueName} (loading...)</option> : null}
             {voices.map((v) => (
               <option key={v.voiceId} value={v.voiceId}>
                 {v.name} ({v.category})
@@ -265,14 +201,12 @@ function VoicePicker({
           </button>
         </div>
       )}
-      {!loading && voices.length === 0 && !error && (
+      {!loading && voices.length === 0 && !error ? (
         <p className="text-xs text-neutral-400">No voices found.</p>
-      )}
+      ) : null}
     </div>
   );
 }
-
-// ── Editor form ───────────────────────────────────────────────────────────
 
 function AgentEditorForm({
   agent,
@@ -289,8 +223,7 @@ function AgentEditorForm({
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
-    const updated = { ...draft, updatedAt: new Date().toISOString() };
-    onSave(updated);
+    onSave({ ...draft, updatedAt: new Date().toISOString() });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -303,7 +236,6 @@ function AgentEditorForm({
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Name */}
       <div className="space-y-1.5">
         <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
           1. Identity
@@ -318,7 +250,6 @@ function AgentEditorForm({
         />
       </div>
 
-      {/* System prompt */}
       <div className="space-y-1.5 border-t border-neutral-200 pt-5">
         <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
           2. Instructions
@@ -328,15 +259,11 @@ function AgentEditorForm({
           value={draft.systemPrompt}
           onChange={(e) => setDraft((d) => ({ ...d, systemPrompt: e.target.value }))}
           rows={8}
-          placeholder="Describe the agent's role, tone, and behavior…"
+          placeholder="Describe the agent role, tone, and behavior..."
           className="helion-input resize-y font-mono"
         />
-        <p className="text-xs text-zinc-400">
-          Keep responses concise and spoken-friendly for live calls.
-        </p>
       </div>
 
-      {/* Voice picker */}
       <div className="border-t border-neutral-200 pt-5">
         <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
           3. Voice
@@ -344,18 +271,14 @@ function AgentEditorForm({
         <VoicePicker
           value={draft.voiceId}
           valueName={draft.voiceName}
-          onChange={(voiceId, voiceName) =>
-            setDraft((d) => ({ ...d, voiceId, voiceName }))
-          }
+          onChange={(voiceId, voiceName) => setDraft((d) => ({ ...d, voiceId, voiceName }))}
         />
       </div>
 
-      {/* TTS model */}
       <div className="space-y-1.5 border-t border-neutral-200 pt-5">
         <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400">
           4. Speech model
         </label>
-        <p className="text-sm font-medium text-neutral-900">TTS model</p>
         <select
           value={draft.ttsModel}
           onChange={(e) => setDraft((d) => ({ ...d, ttsModel: e.target.value }))}
@@ -369,27 +292,17 @@ function AgentEditorForm({
         </select>
       </div>
 
-      {/* Action row */}
       <div className="flex items-center gap-2 border-t border-neutral-200 pt-5">
-        <button
-          onClick={handleSave}
-          disabled={!isDirty}
-          className="helion-btn-dark"
-        >
+        <button onClick={handleSave} disabled={!isDirty} className="helion-btn-dark">
           {saved ? "Saved" : "Save changes"}
         </button>
-        <button
-          onClick={onDuplicate}
-          className="helion-btn-soft"
-        >
+        <button onClick={onDuplicate} className="helion-btn-soft">
           Duplicate
         </button>
         <div className="flex-1" />
         <button
           onClick={() => {
-            if (confirm(`Delete "${agent.name}"? This cannot be undone.`)) {
-              onDelete();
-            }
+            if (confirm(`Delete "${agent.name}"? This cannot be undone.`)) onDelete();
           }}
           className="helion-btn-soft border-red-200 text-red-700 hover:bg-red-50"
         >
@@ -400,90 +313,183 @@ function AgentEditorForm({
   );
 }
 
-// ── Main AgentManager component ───────────────────────────────────────────
-
 export function AgentManager() {
-  const agents = useSyncExternalStore(
-    subscribeAgents,
-    loadAgents,
-    () => EMPTY_AGENTS
-  );
+  const [agents, setAgents] = useState<AgentConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"configure" | "test">("configure");
+  const [tab, setTab] = useState<TabId>("configure");
+  const [saving, setSaving] = useState(false);
   const resolvedActiveId = activeId ?? agents[0]?.id ?? null;
   const activeAgent = agents.find((a) => a.id === resolvedActiveId) ?? null;
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await fetchAgents();
+      setAgents(list);
+      if (!activeId && list[0]) setActiveId(list[0].id);
+      if (activeId && !list.some((a) => a.id === activeId)) setActiveId(list[0]?.id ?? null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load agents.");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const handleCreate = useCallback(() => {
-    const a = createAgent();
-    saveAgents([...agents, a]);
-    setActiveId(a.id);
-    setTab("configure");
-  }, [agents]);
+    void (async () => {
+      setSaving(true);
+      const r = await fetch("/api/voices/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = (await r.json()) as { id?: string; error?: string };
+      setSaving(false);
+      if (!r.ok || !data.id) {
+        setError(data.error ?? "Could not create agent.");
+        return;
+      }
+      await load();
+      setActiveId(data.id);
+      setTab("configure");
+    })();
+  }, [load]);
 
   const handleDuplicate = useCallback(() => {
     if (!activeAgent) return;
-    const clone = createAgent({
-      name: `${activeAgent.name} (copy)`,
-      systemPrompt: activeAgent.systemPrompt,
-      voiceId: activeAgent.voiceId,
-      voiceName: activeAgent.voiceName,
-      ttsModel: activeAgent.ttsModel,
-    });
-    const idx = agents.findIndex((a) => a.id === activeAgent.id);
-    const next = [...agents];
-    next.splice(idx + 1, 0, clone);
-    saveAgents(next);
-    setActiveId(clone.id);
-    setTab("configure");
-  }, [activeAgent, agents]);
+    void (async () => {
+      setSaving(true);
+      const r = await fetch("/api/voices/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          duplicateFromId: activeAgent.id,
+          name: `${activeAgent.name} (copy)`,
+        }),
+      });
+      const data = (await r.json()) as { id?: string; error?: string };
+      setSaving(false);
+      if (!r.ok || !data.id) {
+        setError(data.error ?? "Could not duplicate agent.");
+        return;
+      }
+      await load();
+      setActiveId(data.id);
+      setTab("configure");
+    })();
+  }, [activeAgent, load]);
 
-  const handleSave = useCallback((updated: AgentConfig) => {
-    saveAgents(agents.map((a) => (a.id === updated.id ? updated : a)));
-  }, [agents]);
+  const handleSave = useCallback(
+    (updated: AgentConfig) => {
+      void (async () => {
+        setSaving(true);
+        const r = await fetch(`/api/voices/agents/${updated.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: updated.name,
+            system_prompt: updated.systemPrompt,
+            voice_id: updated.voiceId,
+            settings: {
+              ui: { voiceName: updated.voiceName },
+              ttsModel: updated.ttsModel,
+            },
+          }),
+        });
+        const data = (await r.json()) as { error?: string };
+        setSaving(false);
+        if (!r.ok) {
+          setError(data.error ?? "Could not save agent.");
+          return;
+        }
+        await load();
+      })();
+    },
+    [load],
+  );
+
+  const handleUpdateSettings = useCallback(
+    async (settingsPatch: Record<string, unknown>) => {
+      if (!activeAgent) return;
+      const r = await fetch(`/api/voices/agents/${activeAgent.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings: settingsPatch }),
+      });
+      const data = (await r.json()) as { error?: string };
+      if (!r.ok) {
+        throw new Error(data.error ?? "Could not update settings.");
+      }
+      await load();
+    },
+    [activeAgent, load],
+  );
 
   const handleDelete = useCallback(() => {
     if (!activeAgent) return;
-    const next = agents.filter((a) => a.id !== activeAgent.id);
-    saveAgents(next);
-    if (next.length > 0) {
-      const idx = agents.findIndex((a) => a.id === activeAgent.id);
-      setActiveId(next[Math.min(idx, next.length - 1)].id);
-      return;
-    }
-    setActiveId(null);
-  }, [activeAgent, agents]);
+    void (async () => {
+      setSaving(true);
+      const r = await fetch(`/api/voices/agents/${activeAgent.id}`, { method: "DELETE" });
+      const data = (await r.json()) as { error?: string };
+      setSaving(false);
+      if (!r.ok) {
+        setError(data.error ?? "Could not delete agent.");
+        return;
+      }
+      await load();
+      setActiveId(null);
+    })();
+  }, [activeAgent, load]);
 
-  // ── Empty state ───────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-sm text-neutral-500">
+        Loading agents...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {error}
+      </div>
+    );
+  }
 
   if (agents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <div className="flex h-16 w-16 items-center justify-center bg-neutral-100">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-neutral-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-          </svg>
-        </div>
         <div className="text-center">
           <h2 className="text-lg font-semibold text-neutral-900">No agents yet</h2>
-          <p className="mt-1 text-sm text-zinc-500">Create your first AI voice agent to get started.</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            Create your first AI voice agent to get started.
+          </p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="helion-btn-dark"
-        >
+        <button onClick={handleCreate} disabled={saving} className="helion-btn-dark">
           + Create agent
         </button>
       </div>
     );
   }
 
-  // ── Main layout ───────────────────────────────────────────────────────────
+  const tabs: Array<{ id: TabId; label: string }> = [
+    { id: "configure", label: "Agent" },
+    { id: "live", label: "Live Test" },
+    { id: "branches", label: "Branches" },
+    { id: "tests", label: "Tests" },
+    { id: "tools", label: "Tools" },
+  ];
 
   return (
     <div className="grid min-h-[640px] grid-cols-1 gap-0 overflow-hidden border border-neutral-300 bg-white md:grid-cols-[260px_1fr]">
-      {/* ── Sidebar ── */}
       <div className="flex flex-col border-b border-neutral-300 bg-neutral-50/70 md:border-b-0 md:border-r">
         <div className="flex items-center justify-between border-b border-neutral-300 px-4 py-3">
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
@@ -492,6 +498,7 @@ export function AgentManager() {
           <button
             onClick={handleCreate}
             title="Create new agent"
+            disabled={saving}
             className="helion-btn-soft h-7 w-7 p-0 text-lg leading-none"
           >
             +
@@ -512,36 +519,30 @@ export function AgentManager() {
         </div>
       </div>
 
-      {/* ── Main panel ── */}
       {activeAgent ? (
         <div className="flex flex-col">
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-4">
             <div>
               <p className="helion-kicker">Configuration</p>
-              <h2 className="mt-1 text-lg font-semibold text-neutral-900">
-                {activeAgent.name}
-              </h2>
+              <h2 className="mt-1 text-lg font-semibold text-neutral-900">{activeAgent.name}</h2>
             </div>
-            {/* Tabs */}
             <div className="flex overflow-hidden border border-neutral-300 text-[12px]">
-              {(["configure", "test"] as const).map((t) => (
+              {tabs.map((t) => (
                 <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`px-4 py-1.5 font-medium transition-colors capitalize ${
-                    tab === t
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`px-4 py-1.5 font-medium transition-colors ${
+                    tab === t.id
                       ? "bg-neutral-900 text-white"
                       : "text-neutral-600 hover:bg-neutral-100"
                   }`}
                 >
-                  {t}
+                  {t.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Tab content */}
           <div className="flex-1 overflow-y-auto p-6">
             {tab === "configure" ? (
               <AgentEditorForm
@@ -551,7 +552,9 @@ export function AgentManager() {
                 onDuplicate={handleDuplicate}
                 onDelete={handleDelete}
               />
-            ) : (
+            ) : null}
+
+            {tab === "live" ? (
               <div className="space-y-3">
                 <div className="space-y-0.5 border border-neutral-300 bg-neutral-50 px-4 py-3 text-xs text-neutral-500">
                   <p>
@@ -562,17 +565,35 @@ export function AgentManager() {
                     <span className="font-medium text-neutral-700">Model:</span>{" "}
                     {activeAgent.ttsModel}
                   </p>
-                  <p className="italic">
-                    Prompt: {activeAgent.systemPrompt.slice(0, 80)}…
-                  </p>
                 </div>
-                {/* key=id forces fresh session when switching agents */}
-                <VoiceAgent
-                  key={activeAgent.id}
-                  config={activeAgent}
-                />
+                <VoiceAgent key={activeAgent.id} config={activeAgent} />
               </div>
-            )}
+            ) : null}
+
+            {tab === "branches" ? (
+              <BranchesTab
+                agentId={activeAgent.id}
+                onChanged={() => {
+                  void load();
+                }}
+              />
+            ) : null}
+
+            {tab === "tests" ? (
+              <TestsTab
+                agentId={activeAgent.id}
+                settings={activeAgent.settings}
+                onUpdateSettings={handleUpdateSettings}
+              />
+            ) : null}
+
+            {tab === "tools" ? (
+              <ToolsTab
+                agentId={activeAgent.id}
+                settings={activeAgent.settings}
+                onUpdateSettings={handleUpdateSettings}
+              />
+            ) : null}
           </div>
         </div>
       ) : (

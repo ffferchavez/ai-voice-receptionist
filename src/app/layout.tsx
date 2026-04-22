@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Voice Receptionist · Helion Voices",
-    template: "%s · Helion Voices",
+    default: "AI Voice Receptionist · AI Demo Projects",
+    template: "%s · AI Demo Projects",
   },
   description:
-    "Helion City — Helion Voices. Configure an AI receptionist, ingest voice webhooks, and capture leads.",
+    "AI Demo Projects. Configure an AI receptionist, ingest voice webhooks, and capture leads.",
 };
 
 export const viewport: Viewport = {

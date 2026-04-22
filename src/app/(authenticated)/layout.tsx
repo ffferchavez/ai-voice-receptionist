@@ -26,6 +26,7 @@ export default async function AuthenticatedLayout({
   await ensureDefaultOrganization(supabase, user);
 
   const { data: profile } = await supabase
+    .schema("public")
     .from("profiles")
     .select("display_name")
     .eq("id", user.id)

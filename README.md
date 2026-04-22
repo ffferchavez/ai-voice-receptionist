@@ -23,12 +23,20 @@ See [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) for architecture, routes, pha
    Copy `.env.example` to `.env.local` and fill in values:
 
    - `NEXT_PUBLIC_SUPABASE_URL` — Project URL  
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — `anon` public key  
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` — preferred public key (`sb_publishable_...`)  
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — legacy `anon` public key fallback  
    - `SUPABASE_SERVICE_ROLE_KEY` — `service_role` key (server-only; for webhooks in later phases)
 
 3. **Database**
 
-   Apply the SQL migration in the Supabase SQL editor, or use the CLI:
+   In the shared portfolio Supabase setup, this app uses:
+
+   - `public` schema for shared user/workspace data (`profiles`, `organizations`, `organization_members`)
+   - `voices` schema for receptionist domain tables (`receptionist_configs`, `call_sessions`, etc.)
+
+   Ensure **API → Exposed schemas** includes at least: `public`, `voices`, `intelligence`, `media`.
+
+   If you run this repo standalone (separate Supabase project), you can still apply:
 
    ```bash
    npx supabase db push

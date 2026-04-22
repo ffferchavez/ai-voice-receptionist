@@ -9,6 +9,7 @@ export async function ensureDefaultOrganization(
   user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> },
 ): Promise<string | null> {
   const { data: existing, error: selectError } = await supabase
+    .schema("public")
     .from("organization_members")
     .select("organization_id")
     .eq("user_id", user.id)
@@ -36,7 +37,9 @@ export async function ensureDefaultOrganization(
   const orgName = `${base}'s workspace`;
   const orgSlug = `ws-${user.id.replace(/-/g, "")}`;
 
-  const { data: orgId, error: rpcError } = await supabase.rpc(
+  const { data: orgId, error: rpcError } = await supabase
+    .schema("public")
+    .rpc(
     "create_organization_with_owner",
     { org_name: orgName, org_slug: orgSlug },
   );
