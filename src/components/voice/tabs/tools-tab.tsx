@@ -156,12 +156,12 @@ export function ToolsTab({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Tool name"
-            className="helion-input text-[13px]"
+            className="studio-input text-[13px]"
           />
           <select
             value={method}
             onChange={(e) => setMethod(e.target.value as "GET" | "POST")}
-            className="helion-input text-[13px]"
+            className="studio-input text-[13px]"
           >
             <option value="POST">POST</option>
             <option value="GET">GET</option>
@@ -170,20 +170,20 @@ export function ToolsTab({
             value={endpoint}
             onChange={(e) => setEndpoint(e.target.value)}
             placeholder="https://api.example.com/tool"
-            className="helion-input text-[13px] sm:col-span-2"
+            className="studio-input text-[13px] sm:col-span-2"
           />
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What this tool does"
-            className="helion-input text-[13px] sm:col-span-2"
+            className="studio-input text-[13px] sm:col-span-2"
           />
           <select
             value={authType}
             onChange={(e) =>
               setAuthType(e.target.value as "none" | "bearer" | "basic" | "twilio")
             }
-            className="helion-input text-[13px] sm:col-span-2"
+            className="studio-input text-[13px] sm:col-span-2"
           >
             <option value="none">Auth: None</option>
             <option value="bearer">Auth: Bearer token</option>
@@ -195,7 +195,7 @@ export function ToolsTab({
               value={authBearer}
               onChange={(e) => setAuthBearer(e.target.value)}
               placeholder="Bearer token (supports {{variables}})"
-              className="helion-input text-[13px] sm:col-span-2"
+              className="studio-input text-[13px] sm:col-span-2"
             />
           ) : null}
           {authType === "basic" ? (
@@ -204,13 +204,13 @@ export function ToolsTab({
                 value={authUsername}
                 onChange={(e) => setAuthUsername(e.target.value)}
                 placeholder="Basic username"
-                className="helion-input text-[13px]"
+                className="studio-input text-[13px]"
               />
               <input
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 placeholder="Basic password"
-                className="helion-input text-[13px]"
+                className="studio-input text-[13px]"
               />
             </>
           ) : null}
@@ -220,13 +220,13 @@ export function ToolsTab({
                 value={twilioSid}
                 onChange={(e) => setTwilioSid(e.target.value)}
                 placeholder="Twilio Account SID (or {{twilio_account_sid}})"
-                className="helion-input text-[13px]"
+                className="studio-input text-[13px]"
               />
               <input
                 value={twilioToken}
                 onChange={(e) => setTwilioToken(e.target.value)}
                 placeholder="Twilio Auth Token (or {{twilio_auth_token}})"
-                className="helion-input text-[13px]"
+                className="studio-input text-[13px]"
               />
             </>
           ) : null}
@@ -235,20 +235,20 @@ export function ToolsTab({
             onChange={(e) => setHeadersInput(e.target.value)}
             rows={4}
             placeholder='{"Content-Type":"application/json"}'
-            className="helion-input font-mono text-[12px] sm:col-span-2"
+            className="studio-input font-mono text-[12px] sm:col-span-2"
           />
           <textarea
             value={bodyTemplate}
             onChange={(e) => setBodyTemplate(e.target.value)}
             rows={4}
             placeholder="Optional request body template"
-            className="helion-input font-mono text-[12px] sm:col-span-2"
+            className="studio-input font-mono text-[12px] sm:col-span-2"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            className="helion-btn-dark"
+            className="studio-btn-primary"
             onClick={addTool}
             disabled={!name.trim() || !endpoint.trim()}
           >
@@ -261,7 +261,7 @@ export function ToolsTab({
             value={testPayload}
             onChange={(e) => setTestPayload(e.target.value)}
             rows={4}
-            className="helion-input font-mono text-[12px]"
+            className="studio-input font-mono text-[12px]"
           />
           {testResult ? (
             <pre className="max-h-52 overflow-auto rounded border border-neutral-200 bg-neutral-50 p-2 text-[11px] text-neutral-700">

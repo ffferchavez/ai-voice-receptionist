@@ -175,7 +175,7 @@ function VoicePicker({
               if (v) onChange(v.voiceId, v.name);
             }}
             disabled={loading}
-            className="helion-input flex-1 disabled:opacity-50"
+            className="studio-input flex-1 disabled:opacity-50"
           >
             {loading ? <option value={value}>{valueName} (loading...)</option> : null}
             {voices.map((v) => (
@@ -189,7 +189,7 @@ function VoicePicker({
             onClick={playPreview}
             disabled={!selected?.previewUrl || previewPlaying}
             title="Preview voice"
-            className="helion-btn-soft h-9 w-9 p-0 disabled:opacity-40"
+            className="studio-btn-soft h-9 w-9 p-0 disabled:opacity-40"
           >
             {previewPlaying ? (
               <span className="h-3 w-3 bg-neutral-900" />
@@ -246,7 +246,7 @@ function AgentEditorForm({
           value={draft.name}
           onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
           placeholder="e.g. Sales Receptionist"
-          className="helion-input"
+          className="studio-input"
         />
       </div>
 
@@ -260,7 +260,7 @@ function AgentEditorForm({
           onChange={(e) => setDraft((d) => ({ ...d, systemPrompt: e.target.value }))}
           rows={8}
           placeholder="Describe the agent role, tone, and behavior..."
-          className="helion-input resize-y font-mono"
+          className="studio-input resize-y font-mono"
         />
       </div>
 
@@ -282,7 +282,7 @@ function AgentEditorForm({
         <select
           value={draft.ttsModel}
           onChange={(e) => setDraft((d) => ({ ...d, ttsModel: e.target.value }))}
-          className="helion-input"
+          className="studio-input"
         >
           {TTS_MODELS.map((m) => (
             <option key={m.id} value={m.id}>
@@ -293,10 +293,10 @@ function AgentEditorForm({
       </div>
 
       <div className="flex items-center gap-2 border-t border-neutral-200 pt-5">
-        <button onClick={handleSave} disabled={!isDirty} className="helion-btn-dark">
+        <button onClick={handleSave} disabled={!isDirty} className="studio-btn-primary">
           {saved ? "Saved" : "Save changes"}
         </button>
-        <button onClick={onDuplicate} className="helion-btn-soft">
+        <button onClick={onDuplicate} className="studio-btn-soft">
           Duplicate
         </button>
         <div className="flex-1" />
@@ -304,7 +304,7 @@ function AgentEditorForm({
           onClick={() => {
             if (confirm(`Delete "${agent.name}"? This cannot be undone.`)) onDelete();
           }}
-          className="helion-btn-soft border-red-200 text-red-700 hover:bg-red-50"
+          className="studio-btn-soft border-red-200 text-red-700 hover:bg-red-50"
         >
           Delete
         </button>
@@ -473,7 +473,11 @@ export function AgentManager() {
             Create your first AI voice agent to get started.
           </p>
         </div>
-        <button onClick={handleCreate} disabled={saving} className="helion-btn-dark">
+        <button
+          onClick={handleCreate}
+          disabled={saving}
+          className="studio-btn-primary"
+        >
           + Create agent
         </button>
       </div>
@@ -499,7 +503,7 @@ export function AgentManager() {
             onClick={handleCreate}
             title="Create new agent"
             disabled={saving}
-            className="helion-btn-soft h-7 w-7 p-0 text-lg leading-none"
+            className="studio-btn-soft h-7 w-7 p-0 text-lg leading-none"
           >
             +
           </button>
@@ -523,7 +527,7 @@ export function AgentManager() {
         <div className="flex flex-col">
           <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-4">
             <div>
-              <p className="helion-kicker">Configuration</p>
+              <p className="studio-kicker">Configuration</p>
               <h2 className="mt-1 text-lg font-semibold text-neutral-900">{activeAgent.name}</h2>
             </div>
             <div className="flex overflow-hidden border border-neutral-300 text-[12px]">

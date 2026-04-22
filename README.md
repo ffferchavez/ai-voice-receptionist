@@ -1,4 +1,4 @@
-# AI Voice Receptionist (Helion City — Helion Voices)
+# AI Voice Receptionist (SignalDesk Labs — Voice Ops)
 
 Production-lean MVP: businesses configure an AI voice receptionist, ingest provider webhooks in Next.js route handlers, store transcripts and events, and capture structured leads. Stack: **Next.js App Router**, **TypeScript**, **Tailwind CSS**, **Supabase Auth + Postgres**, external voice providers (e.g. Vapi, Twilio), **OpenAI** for extraction/summaries.
 
@@ -29,19 +29,16 @@ See [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) for architecture, routes, pha
 
 3. **Database**
 
-   In the shared portfolio Supabase setup, this app uses:
+   This app talks to Supabase over PostgREST using the **default `public` schema** (see `NEXT_PUBLIC_SUPABASE_DB_SCHEMA` in `.env.example`). That avoids `Invalid schema: voices`, which happens when a schema is not enabled for the Data API.
 
-   - `public` schema for shared user/workspace data (`profiles`, `organizations`, `organization_members`)
-   - `voices` schema for receptionist domain tables (`receptionist_configs`, `call_sessions`, etc.)
-
-   Ensure **API → Exposed schemas** includes at least: `public`, `voices`, `intelligence`, `media`.
-
-   If you run this repo standalone (separate Supabase project), you can still apply:
+   Apply migrations (includes `public.agent_configs` / branches / publish events for the Agents UI):
 
    ```bash
    npx supabase db push
-   # or paste supabase/migrations/20250322000000_initial_schema.sql manually
+   # or run SQL from supabase/migrations/ in the Supabase SQL editor
    ```
+
+   If you intentionally keep voice tables only in a custom schema (e.g. `voices`) **and** expose that schema under **Project Settings → API → Exposed schemas**, set `NEXT_PUBLIC_SUPABASE_DB_SCHEMA=voices` (or `SUPABASE_VOICES_SCHEMA`).
 
    Enable **Email** auth (or your chosen provider) under Authentication → Providers.
 

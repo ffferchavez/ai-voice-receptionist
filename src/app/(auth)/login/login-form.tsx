@@ -2,6 +2,7 @@
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { readPublicDemoLoginCredentials } from "@/lib/brand";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -16,22 +17,45 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  async function signIn(loginEmail: string, loginPassword: string) {
+    const supabase = createSupabaseBrowserClient();
+    const { error: signError } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    });
+    if (signError) {
+      setError(signError.message);
+      return false;
+    }
+    router.push(next);
+    router.refresh();
+    return true;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: signError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (signError) {
-        setError(signError.message);
-        return;
-      }
-      router.push(next);
-      router.refresh();
+      await signIn(email, password);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onDemoLogin() {
+    setError(null);
+    const demo = readPublicDemoLoginCredentials();
+    if (!demo) {
+      setError(
+        "Demo login is not configured. Set NEXT_PUBLIC_DEMO_LOGIN_EMAIL and NEXT_PUBLIC_DEMO_LOGIN_PASSWORD.",
+      );
+      return;
+    }
+    setLoading(true);
+    try {
+      setEmail(demo.email);
+      await signIn(demo.email, demo.password);
     } finally {
       setLoading(false);
     }
@@ -57,7 +81,7 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@company.com"
-            className="helion-input"
+            className="studio-input"
           />
         </div>
         <div className="space-y-1.5">
@@ -74,23 +98,30 @@ export function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="helion-input"
+            className="studio-input"
           />
         </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="helion-btn-dark mt-1 w-full disabled:opacity-50"
-        >
-          {loading ? "Signing in…" : "Log in"}
-        </button>
+        <div className="mt-1 grid gap-2 sm:grid-cols-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="studio-btn-primary w-full disabled:opacity-50"
+          >
+            {loading ? "Signing in…" : "Log in"}
+          </button>
+          <button
+            type="button"
+            onClick={onDemoLogin}
+            disabled={loading}
+            className="studio-btn-soft w-full disabled:opacity-50"
+          >
+            {loading ? "Opening demo…" : "Demo login"}
+          </button>
+        </div>
       </form>
 
-      <p className="mt-4 text-center text-sm text-neutral-500">
-        New here?{" "}
-        <Link href="/signup" className="underline underline-offset-2">
-          Sign up
-        </Link>
+      <p className="mt-4 text-center text-xs text-ui-muted-dim">
+        Demo uses a sandbox account with non-sensitive sample data.
       </p>
       <p className="mt-8 text-center text-sm text-neutral-500">
         <Link href="/" className="underline underline-offset-2">

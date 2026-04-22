@@ -123,13 +123,13 @@ export function TestsTab({
           <div className="flex gap-2">
             <button
               type="button"
-              className="helion-btn-soft text-[13px] disabled:opacity-40"
+              className="studio-btn-soft text-[13px] disabled:opacity-40"
               onClick={() => void runAll()}
               disabled={running || scenarios.length === 0}
             >
               {running ? "Running..." : "Run all tests"}
             </button>
-            <button type="button" className="helion-btn-dark text-[13px]" onClick={add}>
+            <button type="button" className="studio-btn-primary text-[13px]" onClick={add}>
               Add test
             </button>
           </div>
@@ -146,19 +146,19 @@ export function TestsTab({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Scenario name"
-            className="helion-input min-w-[220px] text-[13px]"
+            className="studio-input min-w-[220px] text-[13px]"
           />
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Customer input (defaults to name)"
-            className="helion-input min-w-[220px] text-[13px]"
+            className="studio-input min-w-[220px] text-[13px]"
           />
           <input
             value={expectedContains}
             onChange={(e) => setExpectedContains(e.target.value)}
             placeholder="Expected phrase (optional)"
-            className="helion-input min-w-[220px] text-[13px] sm:col-span-2"
+            className="studio-input min-w-[220px] text-[13px] sm:col-span-2"
           />
         </div>
 

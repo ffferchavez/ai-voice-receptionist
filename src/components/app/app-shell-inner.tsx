@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { AppSidebar } from "@/components/app/app-sidebar";
-import { HelionWordmarkLink } from "@/components/brand/helion-wordmark";
+import { BrandWordmarkLink } from "@/components/brand/brand-wordmark";
 import { MAIN_PAD, PAGE_INSET } from "@/lib/ui/shell";
 
 const APP_HEADER_CLASS =
-  "public-header-safe-top shrink-0 border-b border-neutral-200/80 bg-white";
+  "public-header-safe-top shrink-0 border-b border-ui-line bg-white/95 backdrop-blur";
 
 function MenuIcon() {
   return (
@@ -43,7 +43,7 @@ export function AppShellInner({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-[#fafafa]">
+    <div className="flex min-h-dvh flex-1 flex-col bg-ui-bg">
       <header className={APP_HEADER_CLASS}>
         <div
           className={`${PAGE_INSET} flex flex-wrap items-center justify-between gap-x-4 gap-y-3 py-3 sm:gap-x-6 sm:py-4`}
@@ -52,16 +52,12 @@ export function AppShellInner({
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
-              className="inline-flex size-11 shrink-0 items-center justify-center text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950 md:hidden"
+              className="inline-flex size-11 shrink-0 items-center justify-center text-ui-muted transition-colors hover:bg-ui-surface hover:text-ui-text md:hidden"
               aria-label="Open menu"
             >
               <MenuIcon />
             </button>
-            <HelionWordmarkLink
-              href="/dashboard"
-              product="Voices"
-              variant="on-light"
-            />
+            <BrandWordmarkLink href="/dashboard" variant="on-light" />
           </div>
         </div>
       </header>

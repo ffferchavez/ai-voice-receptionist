@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseDbSchema } from "@/lib/supabase/env";
 
 export function createSupabaseAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -6,8 +7,9 @@ export function createSupabaseAdminClient() {
   if (!url || !key) {
     throw new Error("Missing Supabase admin environment variables");
   }
+  const schema = getSupabaseDbSchema();
   return createClient(url, key, {
-    db: { schema: "voices" },
+    db: { schema },
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

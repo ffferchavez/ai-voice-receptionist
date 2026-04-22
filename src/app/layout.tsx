@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Syne } from "next/font/google";
+import { Geist_Mono, Outfit } from "next/font/google";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -15,18 +16,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Voice Receptionist · AI Demo Projects",
-    template: "%s · AI Demo Projects",
+    default: BRAND.metadataTitle,
+    template: `%s · ${BRAND.metadataTitleSuffix}`,
   },
-  description:
-    "AI Demo Projects. Configure an AI receptionist, ingest voice webhooks, and capture leads.",
+  description: BRAND.metadataDescription,
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0a",
+  themeColor: "#6d28d9",
 };
 
 export default function RootLayout({
@@ -38,7 +38,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${syne.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body
         className="flex min-h-dvh flex-col bg-ui-bg font-sans text-ui-text"

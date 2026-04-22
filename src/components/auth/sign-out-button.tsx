@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const navLinkFocus =
-  "outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafafa]";
+  "outline-none focus-visible:ring-2 focus-visible:ring-ui-accent/30 focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg";
 
 export function SignOutButton({
   className = "",
@@ -35,8 +35,8 @@ export function SignOutButton({
       className={[
         navLinkFocus,
         collapsed
-          ? "inline-flex min-h-10 items-center px-1 text-[12px] font-medium text-neutral-500 transition-colors hover:text-neutral-950 disabled:opacity-50"
-          : "inline-flex min-h-10 items-center gap-2 px-1 text-[13px] font-medium text-neutral-600 transition-colors hover:text-neutral-950 disabled:opacity-50",
+          ? "inline-flex min-h-10 items-center px-1 text-[12px] font-medium text-ui-muted transition-colors hover:text-ui-text disabled:opacity-50"
+          : "inline-flex min-h-10 items-center gap-2 px-1 text-[13px] font-medium text-ui-muted transition-colors hover:text-ui-text disabled:opacity-50",
         className,
       ].join(" ")}
     >

@@ -1,4 +1,4 @@
-# AI Voice Receptionist — Project Plan (Helion City / Helion Voices)
+# AI Voice Receptionist — Project Plan (SignalDesk Labs / Voice Ops)
 
 Production-lean MVP: SaaS-style AI receptionist with webhook ingestion, transcripts, summaries, and structured leads. **No** live transfer, calendar booking, outbound voice, or separate backend service in v1.
 
@@ -115,7 +115,7 @@ supabase/
 
 ## 6. UI page breakdown
 
-- **Landing**: Hero (Helion Voices), value props, feature grid, CTA to sign up.
+- **Landing**: Hero (SignalDesk Voice Ops), value props, feature grid, CTA to sign in.
 - **Login / Signup**: Minimal forms + Supabase.
 - **Dashboard**: Cards (calls, leads), shortcuts.
 - **Receptionist**: Form fields + read-only webhook URL + rotate secret.

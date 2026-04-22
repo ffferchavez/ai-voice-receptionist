@@ -1,4 +1,4 @@
--- AI Voice Receptionist — initial schema + RLS (Helion Voices MVP)
+-- AI Voice Receptionist — initial schema + RLS (SignalDesk Voice Ops MVP)
 -- Apply with Supabase CLI or SQL editor.
 
 -- -----------------------------------------------------------------------------

@@ -1,31 +1,30 @@
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 
-type HelionWordmarkLinkProps = {
+type BrandWordmarkLinkProps = {
   href: string;
-  product?: string;
   variant?: "on-light" | "on-dark";
   className?: string;
 };
 
-export function HelionWordmarkLink({
+export function BrandWordmarkLink({
   href,
-  product = "Voices",
   variant = "on-light",
   className = "",
-}: HelionWordmarkLinkProps) {
+}: BrandWordmarkLinkProps) {
   const isDark = variant === "on-dark";
 
   return (
     <Link
       href={href}
       className={`inline-flex min-h-[42px] items-center gap-2 font-sans text-sm uppercase tracking-[0.16em] sm:gap-2 sm:text-[15px] ${className}`}
-      aria-label={`Helion ${product} home`}
+      aria-label={`${BRAND.metadataTitleSuffix} home`}
     >
-      <span className={isDark ? "font-normal text-white" : "font-normal text-neutral-950"}>
-        Helion
+      <span className={isDark ? "font-normal text-white" : "font-normal text-ui-text"}>
+        {BRAND.shortName}
       </span>
-      <span className={isDark ? "font-semibold text-yellow-400" : "font-semibold text-neutral-950"}>
-        {product}
+      <span className={isDark ? "font-semibold text-violet-300" : "font-semibold text-ui-accent"}>
+        {BRAND.productName}
       </span>
     </Link>
   );

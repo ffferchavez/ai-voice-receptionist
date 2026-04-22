@@ -7,7 +7,7 @@ export const metadata = {
 export default function AuthCodeErrorPage() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
-      <div className="helion-panel p-8">
+      <div className="studio-panel p-8">
         <h1 className="text-xl font-semibold text-neutral-950">
           Could not complete sign-in
         </h1>
@@ -17,7 +17,7 @@ export default function AuthCodeErrorPage() {
         </p>
         <Link
           href="/login"
-          className="helion-btn-dark mt-6 inline-flex w-full items-center justify-center"
+          className="studio-btn-primary mt-6 inline-flex w-full items-center justify-center"
         >
           Back to log in
         </Link>

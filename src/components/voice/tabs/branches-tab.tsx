@@ -113,7 +113,7 @@ export function BranchesTab({
           <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="helion-input mt-1 w-full"
+            className="studio-input mt-1 w-full"
             placeholder="e.g. Experiment A"
           />
         </div>
@@ -121,7 +121,7 @@ export function BranchesTab({
           type="button"
           onClick={() => void createBranch()}
           disabled={busy || !newName.trim()}
-          className="helion-btn-dark"
+          className="studio-btn-primary"
         >
           + Create branch
         </button>
@@ -159,7 +159,7 @@ export function BranchesTab({
                     onChange={(e) =>
                       updateLocalTraffic(b.id, Number(e.target.value) || 0)
                     }
-                    className="helion-input w-20 py-1 text-[13px]"
+                    className="studio-input w-20 py-1 text-[13px]"
                   />
                 </td>
                 <td className="px-4 py-3">
@@ -192,7 +192,7 @@ export function BranchesTab({
           type="button"
           onClick={() => void applyTraffic()}
           disabled={busy || sum !== 100}
-          className="helion-btn-dark disabled:opacity-40"
+          className="studio-btn-primary disabled:opacity-40"
         >
           Apply traffic split
         </button>

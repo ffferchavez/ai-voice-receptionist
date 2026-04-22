@@ -1,25 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --ui-bg: #fafafa;
-  --ui-bg-muted: #f4f4f5;
-  --ui-ink: #0a0a0a;
-  --ui-ink-deep: #050505;
-  --ui-surface: #f4f4f5;
-  --ui-surface-hover: #e4e4e7;
-  --ui-line: #0a0a0a;
-  --ui-line-soft: rgba(10, 10, 10, 0.1);
-  --ui-text: #0a0a0a;
-  --ui-muted: #52525b;
-  --ui-muted-dim: #71717a;
+  --ui-bg: #f6f7fb;
+  --ui-bg-muted: #eef0f8;
+  --ui-ink: #151228;
+  --ui-ink-deep: #080511;
+  --ui-surface: #eceffa;
+  --ui-surface-hover: #e4e8f6;
+  --ui-line: #d3d6e5;
+  --ui-line-soft: rgba(21, 18, 40, 0.12);
+  --ui-text: #1f1b33;
+  --ui-muted: #5d5a72;
+  --ui-muted-dim: #7b7891;
   --ui-yellow: #facc15;
-  --ui-yellow-bright: #ffea00;
+  --ui-yellow-bright: #fde047;
   --ui-yellow-muted: rgba(250, 204, 21, 0.22);
-  --ui-accent: #0d9488;
-  --ui-accent-hover: #0f766e;
-  --ui-accent-muted: rgba(13, 148, 136, 0.12);
+  --ui-accent: #7c3aed;
+  --ui-accent-hover: #6d28d9;
+  --ui-accent-muted: rgba(124, 58, 237, 0.15);
   --ui-on-accent: #ffffff;
   --ui-warning: #9a3412;
+  --ui-radius-sm: 0.45rem;
+  --ui-radius-md: 0.7rem;
 }
 
 @theme inline {
@@ -41,7 +43,7 @@
   --color-ui-muted: var(--ui-muted);
   --color-ui-muted-dim: var(--ui-muted-dim);
   --color-ui-warning: var(--ui-warning);
-  --font-sans: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -55,7 +57,6 @@ button,
 input,
 select,
 textarea {
-  border-radius: 0;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -63,7 +64,7 @@ textarea {
 body {
   background-color: var(--ui-bg);
   color: var(--ui-text);
-  font-family: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
 }
 
@@ -77,44 +78,50 @@ a {
 }
 
 ::selection {
-  background: var(--ui-yellow-muted);
+  background: var(--ui-accent-muted);
   color: var(--ui-ink-deep);
 }
 
-.helion-kicker {
+.studio-kicker {
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.28em;
+  font-weight: 600;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #a1a1aa;
+  color: var(--ui-accent);
 }
 
-.helion-panel {
-  border: 1px solid rgba(10, 10, 10, 0.2);
+.studio-panel {
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius-md);
   background: #fff;
+  box-shadow: 0 6px 24px rgba(89, 85, 132, 0.08);
 }
 
-.helion-input {
+.studio-input {
   width: 100%;
-  border: 1px solid rgba(10, 10, 10, 0.34);
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius-sm);
   background: #fff;
   padding: 10px 12px;
   font-size: 14px;
   outline: none;
-  transition: border-color 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.helion-input:focus {
-  border-color: #0a0a0a;
+.studio-input:focus {
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 3px var(--ui-accent-muted);
 }
 
-.helion-btn-dark {
+.studio-btn-primary {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
   justify-content: center;
-  border-radius: 0;
-  background: #0a0a0a;
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-accent);
   padding: 0 16px;
   font-size: 13px;
   font-weight: 600;
@@ -122,36 +129,37 @@ a {
   transition: background-color 160ms ease, opacity 160ms ease;
 }
 
-.helion-btn-dark:hover {
-  background: #262626;
+.studio-btn-primary:hover {
+  background: var(--ui-accent-hover);
 }
 
-.helion-btn-dark:disabled {
+.studio-btn-primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.helion-btn-soft {
+.studio-btn-soft {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
   justify-content: center;
-  border-radius: 0;
-  border: 1px solid rgba(10, 10, 10, 0.2);
+  border-radius: var(--ui-radius-sm);
+  border: 1px solid var(--ui-line);
   background: #fff;
   padding: 0 16px;
   font-size: 13px;
   font-weight: 600;
-  color: #3f3f46;
+  color: var(--ui-muted);
   transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease;
 }
 
-.helion-btn-soft:hover {
-  background: #f4f4f5;
-  color: #0a0a0a;
+.studio-btn-soft:hover {
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  border-color: color-mix(in srgb, var(--ui-accent) 40%, var(--ui-line));
 }
 
-.helion-row-link {
+.studio-row-link {
   display: inline-flex;
   min-height: 56px;
   width: 100%;
@@ -159,10 +167,10 @@ a {
   justify-content: space-between;
   padding: 0 16px;
   font-size: 17px;
-  color: #18181b;
+  color: var(--ui-text);
   transition: background-color 160ms ease;
 }
 
-.helion-row-link:hover {
-  background: #f4f4f5;
+.studio-row-link:hover {
+  background: var(--ui-surface);
 }

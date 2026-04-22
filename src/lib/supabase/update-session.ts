@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { getSupabaseDbSchema, getSupabasePublicEnv } from "@/lib/supabase/env";
 import { getSharedAuthCookieOptions } from "@/lib/supabase/cookie-options";
 
 function copyCookies(from: NextResponse, to: NextResponse) {
@@ -17,7 +17,7 @@ function isProtectedPath(pathname: string) {
 }
 
 function isAuthPagePath(pathname: string) {
-  return pathname === "/login" || pathname === "/signup";
+  return pathname === "/login";
 }
 
 /** Runs in `src/proxy.ts` to refresh Supabase auth cookies and gate app routes. */
@@ -31,9 +31,10 @@ export async function updateSession(request: NextRequest) {
   }
 
   let supabaseResponse = NextResponse.next({ request });
+  const schema = getSupabaseDbSchema();
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    db: { schema: "voices" },
+    db: { schema },
     cookieOptions: getSharedAuthCookieOptions(),
     cookies: {
       getAll() {

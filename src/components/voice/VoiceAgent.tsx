@@ -355,12 +355,12 @@ export function VoiceAgent({ config, className = "" }: VoiceAgentProps) {
           onKeyDown={(e) => e.key === "Enter" && sendText()}
           placeholder="Or type a message…"
           disabled={status !== "ready"}
-          className="helion-input flex-1 disabled:opacity-40"
+          className="studio-input flex-1 disabled:opacity-40"
         />
         <button
           onClick={sendText}
           disabled={status !== "ready" || !textInput.trim()}
-          className="helion-btn-dark"
+          className="studio-btn-primary"
         >
           Send
         </button>

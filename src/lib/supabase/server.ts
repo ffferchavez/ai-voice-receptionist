@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { getSupabaseDbSchema, getSupabasePublicEnv } from "@/lib/supabase/env";
 import { getSharedAuthCookieOptions } from "@/lib/supabase/cookie-options";
 
 const BUILD_PLACEHOLDER_URL = "http://127.0.0.1:54321";
@@ -23,12 +23,13 @@ export async function createSupabaseServerClient() {
   }
 
   const cookieStore = await cookies();
+  const schema = getSupabaseDbSchema();
 
   return createServerClient(
     supabaseUrl ?? BUILD_PLACEHOLDER_URL,
     supabaseKey ?? BUILD_PLACEHOLDER_KEY,
     {
-    db: { schema: "voices" },
+    db: { schema },
     cookieOptions: getSharedAuthCookieOptions(),
     cookies: {
       getAll() {
